@@ -24,8 +24,6 @@ pub fn monitor_postbox(config: crate::Standort) -> Result<()> {
 
     loop {
 
-        if imap_session.
-
         info!("searching for UNSEEN mails");
         let sequence_set = imap_session.search("UNSEEN");
 
