@@ -1,10 +1,12 @@
 use std::fs::File;
 use log::{info, error, warn, LevelFilter};
 use simplelog::{ColorChoice, CombinedLogger, Config, debug, TerminalMode, TermLogger, WriteLogger};
+use crate::imap::monitor_postbox;
 
 mod imap;
 mod fireplan;
 
+#[derive(Clone)]
 pub struct Configuration {
     imap_server: String,
     imap_port: u16,
@@ -16,7 +18,12 @@ pub struct Configuration {
 
 fn main() {
 
-    let config : Vec<Configuration> = vec![];
+    let configuration : Vec<Configuration> = vec![Configuration {
+        imap_server: "dummyserver".to_string(),
+        imap_port: 1234,
+        imap_password: "dummypassword".to_string(),
+        fireplan_api_key: "dummykey".to_string(),
+    }];
 
     CombinedLogger::init(
         vec![
@@ -25,8 +32,8 @@ fn main() {
         ]
     ).unwrap();
 
-    error!("Bright red error");
-    info!("This only appears in the log file");
-    debug!("This level is currently not enabled for any logger");
+    for config in configuration {
+        monitor_postbox(config.clone());
+    }
 
 }
