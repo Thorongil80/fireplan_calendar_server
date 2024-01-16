@@ -26,7 +26,7 @@ pub struct Configuration {
 
 fn main() {
 
-    let file = format!("{}\\fireplan_alarm_imap.conf.template", env!("USERPROFILE"));
+    let file = format!("{}\\fireplan_alarm_imap.conf", env!("USERPROFILE"));
 
     let content = fs::read_to_string(file).expect("Config file missing!");
     //let mut configuration = Configuration {
