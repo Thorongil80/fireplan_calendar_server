@@ -14,7 +14,7 @@ mod fireplan;
 pub struct Standort {
     imap_server: String,
     imap_port: u16,
-    imap_email: String,
+    imap_user: String,
     imap_password: String,
     fireplan_api_key: String
 }
@@ -27,11 +27,7 @@ pub struct Configuration {
 fn main() {
 
     let file = format!("{}\\fireplan_alarm_imap.conf", env!("USERPROFILE"));
-
     let content = fs::read_to_string(file).expect("Config file missing!");
-    //let mut configuration = Configuration {
-    //    standort: vec![]};
-
     let configuration : Configuration = toml::from_str(content.as_str()).unwrap();
 
     CombinedLogger::init(
