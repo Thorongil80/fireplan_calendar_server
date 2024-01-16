@@ -1,0 +1,6 @@
+[[standorte]]
+imap_server = ""
+imap_port = 0
+imap_email = ""
+imap_password = ""
+fireplan_api_key = ""

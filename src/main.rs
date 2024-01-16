@@ -1,29 +1,38 @@
+use std::collections::{HashMap, HashSet};
+use std::fs;
 use std::fs::File;
 use log::{info, error, warn, LevelFilter};
 use simplelog::{ColorChoice, CombinedLogger, Config, debug, TerminalMode, TermLogger, WriteLogger};
 use crate::imap::monitor_postbox;
+use serde_derive::Deserialize;
+use serde_derive::Serialize;
 
 mod imap;
 mod fireplan;
 
-#[derive(Clone)]
-pub struct Configuration {
+#[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq)]
+pub struct Standort {
     imap_server: String,
     imap_port: u16,
+    imap_email: String,
     imap_password: String,
     fireplan_api_key: String
 }
 
-
+#[derive(Clone, Serialize, Deserialize)]
+pub struct Configuration {
+    standorte: Vec<Standort>
+}
 
 fn main() {
 
-    let configuration : Vec<Configuration> = vec![Configuration {
-        imap_server: "dummyserver".to_string(),
-        imap_port: 1234,
-        imap_password: "dummypassword".to_string(),
-        fireplan_api_key: "dummykey".to_string(),
-    }];
+    let file = format!("{}\\fireplan_alarm_imap.conf.template", env!("USERPROFILE"));
+
+    let content = fs::read_to_string(file).expect("Config file missing!");
+    //let mut configuration = Configuration {
+    //    standort: vec![]};
+
+    let configuration : Configuration = toml::from_str(content.as_str()).unwrap();
 
     CombinedLogger::init(
         vec![
@@ -32,7 +41,7 @@ fn main() {
         ]
     ).unwrap();
 
-    for config in configuration {
+    for config in configuration.standorte {
         monitor_postbox(config.clone());
     }
 
