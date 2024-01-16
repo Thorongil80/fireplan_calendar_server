@@ -23,6 +23,9 @@ pub fn monitor_postbox(config: crate::Standort) -> Result<()> {
     imap_session.select("INBOX")?;
 
     loop {
+
+        if imap_session.
+
         info!("searching for UNSEEN mails");
         let sequence_set = imap_session.search("UNSEEN");
 
@@ -66,7 +69,7 @@ pub fn monitor_postbox(config: crate::Standort) -> Result<()> {
 
         match imap_session.idle() {
             Ok(idle) => { info!("engaging IDLE");
-                match idle.wait() {
+                match idle.wait_keepalive() {
                     Ok(_) => { info!("New eMail has arrived"); }
                     Err(_) => { error!("IDLE failed, will wait 10 seconds now"); std::thread::sleep(Duration::from_secs(10)); }
                 } }
