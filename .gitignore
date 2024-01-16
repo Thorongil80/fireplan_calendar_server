@@ -17,3 +17,4 @@ Cargo.lock
 # Added by cargo
 
 /target
+/fireplan_alarm_imap.log
