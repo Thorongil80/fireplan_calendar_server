@@ -16,7 +16,7 @@ pub fn monitor_postbox(config: crate::Standort) -> Result<()> {
         info!("Connecting {}:{}", domain, config.imap_port);
         let client = match  imap::connect((domain, config.imap_port), domain, &tls) {
             Ok(c) => {c}
-            Err(e) => {error!("Could not connect, retry in 30 seconds"); std::thread::sleep(Duration::from_secs(30)); break; }
+            Err(e) => {error!("Could not connect, retry in 30 seconds"); std::thread::sleep(Duration::from_secs(30)); continue; }
         };
         info!("Authenticating {},********", config.imap_user);
         let mut imap_session = match client.login(config.imap_user.as_str(), config.imap_password.clone()) {
