@@ -1,3 +1,7 @@
+rics = [ { text = "Abcd", ric = "123456", subric = "B" },
+         { text = "Xyz",  ric = "654321", subric = "B" }  ]
+
+
 [[standorte]]
 imap_server = ""
 imap_port = 0
