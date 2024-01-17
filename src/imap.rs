@@ -24,7 +24,10 @@ pub fn monitor_postbox(config: crate::Standort) -> Result<()> {
             Err((e, _)) => { return Err(anyhow!(e)) }
         };
         info!("Selecting INBOX");
-        imap_session.select("INBOX")?;
+        match imap_session.select("INBOX") {
+            Ok(_) => { info!("selected"); }
+            Err(e) => { error!("Select failed, maybe disconnect: {}", e);  std::thread::sleep(Duration::from_secs(10)); break; }
+        };
 
         loop {
             info!("searching for UNSEEN mails");
@@ -64,7 +67,7 @@ pub fn monitor_postbox(config: crate::Standort) -> Result<()> {
                         }
                     }
                 }
-                Err(e) => { info!("error retrieving messages") }
+                Err(e) => { error!("error retrieving messages: {}, try reconnect in 10s", e); std::thread::sleep(Duration::from_secs(10)); break; }
             }
 
             match imap_session.idle() {
