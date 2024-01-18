@@ -5,7 +5,6 @@ use anyhow::{anyhow, Result};
 use mail_parser::MessageParser;
 
 pub fn monitor_postbox(config: crate::Standort) -> Result<()> {
-    crate::fireplan::submit(config.clone());
 
     loop {
         let domain = config.imap_server.as_str();

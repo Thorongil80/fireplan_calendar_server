@@ -35,9 +35,16 @@ pub struct Configuration {
 }
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct ParsedData {
-    leitstellennummer: String,
-    stichwort: String,
     rics: Vec<Ric>,
+    einsatznrlst: String,
+    strasse: String,
+    hausnummer: String,
+    ort: String,
+    ortsteil: String,
+    objektname: String,
+    koordinaten: String,
+    einsatzstichwort: String,
+    zusatzinfo: String,
 }
 
 
