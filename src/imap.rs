@@ -1,10 +1,7 @@
-use std::borrow::Cow;
-use std::net::TcpStream;
 use std::time::Duration;
 use log::{error, info};
-use native_tls::{TlsConnector, TlsStream};
+use native_tls::TlsConnector;
 use anyhow::{anyhow, Result};
-use imap::{Client, Error, Session};
 use mail_parser::MessageParser;
 
 pub fn monitor_postbox(config: crate::Standort) -> Result<()> {
@@ -16,7 +13,7 @@ pub fn monitor_postbox(config: crate::Standort) -> Result<()> {
         info!("[{}] - Connecting {}:{}", config.standort, domain, config.imap_port);
         let client = match  imap::connect((domain, config.imap_port), domain, &tls) {
             Ok(c) => {c}
-            Err(e) => {error!("[{}] - Could not connect, retry in 30 seconds", config.standort); std::thread::sleep(Duration::from_secs(30)); continue; }
+            Err(e) => {error!("[{}] - Could not connect: {}, retry in 30 seconds", config.standort, e); std::thread::sleep(Duration::from_secs(30)); continue; }
         };
         info!("[{}] - Authenticating {},********", config.standort, config.imap_user);
         let mut imap_session = match client.login(config.imap_user.as_str(), config.imap_password.clone()) {
@@ -35,7 +32,7 @@ pub fn monitor_postbox(config: crate::Standort) -> Result<()> {
 
             match sequence_set {
                 Ok(seq) => {
-                    if seq.len() == 0 {
+                    if seq.is_empty() {
                         info!("[{}] - No unread messages found", config.standort);
                     }
                     for s in seq {
@@ -59,7 +56,7 @@ pub fn monitor_postbox(config: crate::Standort) -> Result<()> {
 
                                 match imap_session.store(s.to_string(), "+FLAGS (\\Seen)") {
                                     Ok(_) => info!("[{}] - marked message SEEN", config.standort),
-                                    Err(e) => error!("[{}] - could not mark message as SEEN", config.standort)
+                                    Err(e) => error!("[{}] - could not mark message as SEEN: {}", config.standort, e)
                                 };
                             } else {
                                 println!("[{}] - Message didn't have a body!", config.standort);
@@ -83,7 +80,7 @@ pub fn monitor_postbox(config: crate::Standort) -> Result<()> {
                     }
                 }
                 Err(e) => {
-                    error!("[{}] - could not initiate IDLE, will wait a minute", config.standort);
+                    error!("[{}] - could not initiate IDLE: {}, will wait a minute", config.standort, e);
                     std::thread::sleep(Duration::from_secs(60));
                 }
             };
