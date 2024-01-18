@@ -13,6 +13,7 @@ mod parser;
 
 #[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug)]
 pub struct Standort {
+    standort: String,
     imap_server: String,
     imap_port: u16,
     imap_user: String,

@@ -3,6 +3,7 @@ rics = [ { text = "Abcd", ric = "123456", subric = "B" },
 
 
 [[standorte]]
+standort = ""
 imap_server = ""
 imap_port = 0
 imap_user = ""
