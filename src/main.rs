@@ -78,7 +78,14 @@ fn main() {
 
     info!("Configuration: {:?}", configuration);
 
-    for config in configuration.standorte {
-        monitor_postbox(config.clone());
+    for standort in &configuration.standorte {
+        match monitor_postbox(standort.clone(), configuration.clone()) {
+            Ok(_) => {
+                info!("monitor done: {}", standort.standort)
+            }
+            Err(e) => {
+                error!("monitor failed: {}, {}", standort.standort, e)
+            }
+        };
     }
 }
