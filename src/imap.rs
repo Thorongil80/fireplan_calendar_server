@@ -1,28 +1,50 @@
-use std::time::Duration;
-use log::{error, info};
-use native_tls::TlsConnector;
 use anyhow::{anyhow, Result};
+use log::{error, info};
 use mail_parser::MessageParser;
+use native_tls::TlsConnector;
+use std::time::Duration;
 
 pub fn monitor_postbox(config: crate::Standort) -> Result<()> {
-
     loop {
         let domain = config.imap_server.as_str();
         let tls = TlsConnector::builder().build()?;
-        info!("[{}] - Connecting {}:{}", config.standort, domain, config.imap_port);
-        let client = match  imap::connect((domain, config.imap_port), domain, &tls) {
-            Ok(c) => {c}
-            Err(e) => {error!("[{}] - Could not connect: {}, retry in 30 seconds", config.standort, e); std::thread::sleep(Duration::from_secs(30)); continue; }
+        info!(
+            "[{}] - Connecting {}:{}",
+            config.standort, domain, config.imap_port
+        );
+        let client = match imap::connect((domain, config.imap_port), domain, &tls) {
+            Ok(c) => c,
+            Err(e) => {
+                error!(
+                    "[{}] - Could not connect: {}, retry in 30 seconds",
+                    config.standort, e
+                );
+                std::thread::sleep(Duration::from_secs(30));
+                continue;
+            }
         };
-        info!("[{}] - Authenticating {},********", config.standort, config.imap_user);
-        let mut imap_session = match client.login(config.imap_user.as_str(), config.imap_password.clone()) {
-            Ok(s) => { s }
-            Err((e, _)) => { return Err(anyhow!(e)) }
-        };
+        info!(
+            "[{}] - Authenticating {},********",
+            config.standort, config.imap_user
+        );
+        let mut imap_session =
+            match client.login(config.imap_user.as_str(), config.imap_password.clone()) {
+                Ok(s) => s,
+                Err((e, _)) => return Err(anyhow!(e)),
+            };
         info!("[{}] - Selecting INBOX", config.standort);
         match imap_session.select("INBOX") {
-            Ok(_) => { info!("[{}] - selected INBOX", config.standort); }
-            Err(e) => { error!("[{}] - Select failed, maybe disconnect: {}", config.standort, e);  std::thread::sleep(Duration::from_secs(10)); break; }
+            Ok(_) => {
+                info!("[{}] - selected INBOX", config.standort);
+            }
+            Err(e) => {
+                error!(
+                    "[{}] - Select failed, maybe disconnect: {}",
+                    config.standort, e
+                );
+                std::thread::sleep(Duration::from_secs(10));
+                break;
+            }
         };
 
         loop {
@@ -55,7 +77,10 @@ pub fn monitor_postbox(config: crate::Standort) -> Result<()> {
 
                                 match imap_session.store(s.to_string(), "+FLAGS (\\Seen)") {
                                     Ok(_) => info!("[{}] - marked message SEEN", config.standort),
-                                    Err(e) => error!("[{}] - could not mark message as SEEN: {}", config.standort, e)
+                                    Err(e) => error!(
+                                        "[{}] - could not mark message as SEEN: {}",
+                                        config.standort, e
+                                    ),
                                 };
                             } else {
                                 println!("[{}] - Message didn't have a body!", config.standort);
@@ -63,14 +88,23 @@ pub fn monitor_postbox(config: crate::Standort) -> Result<()> {
                         }
                     }
                 }
-                Err(e) => { error!("[{}] - error retrieving messages: {}, try reconnect in 10s", config.standort, e); std::thread::sleep(Duration::from_secs(10)); break; }
+                Err(e) => {
+                    error!(
+                        "[{}] - error retrieving messages: {}, try reconnect in 10s",
+                        config.standort, e
+                    );
+                    std::thread::sleep(Duration::from_secs(10));
+                    break;
+                }
             }
 
             match imap_session.idle() {
                 Ok(idle) => {
                     info!("[{}] - engaging IDLE", config.standort);
                     match idle.wait_keepalive() {
-                        Ok(_) => { info!("[{}] - New eMail has arrived", config.standort); }
+                        Ok(_) => {
+                            info!("[{}] - New eMail has arrived", config.standort);
+                        }
                         Err(_) => {
                             error!("[{}] - IDLE failed, maybe disconnect, try reconnect after 10 seconds", config.standort);
                             std::thread::sleep(Duration::from_secs(10));
@@ -79,12 +113,14 @@ pub fn monitor_postbox(config: crate::Standort) -> Result<()> {
                     }
                 }
                 Err(e) => {
-                    error!("[{}] - could not initiate IDLE: {}, will wait a minute", config.standort, e);
+                    error!(
+                        "[{}] - could not initiate IDLE: {}, will wait a minute",
+                        config.standort, e
+                    );
                     std::thread::sleep(Duration::from_secs(60));
                 }
             };
         }
-
     }
     Ok(())
 }
