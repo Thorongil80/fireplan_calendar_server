@@ -1,11 +1,8 @@
 use crate::imap::monitor_postbox;
-use log::{error, info, warn, LevelFilter};
+use log::{error, info, LevelFilter};
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
-use simplelog::{
-    debug, ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode, WriteLogger,
-};
-use std::collections::{HashMap, HashSet};
+use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode, WriteLogger};
 use std::fs;
 use std::fs::File;
 

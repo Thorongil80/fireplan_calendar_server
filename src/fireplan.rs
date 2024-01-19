@@ -1,8 +1,7 @@
 use crate::ParsedData;
 use log::{error, info};
-use reqwest::blocking::{Client, RequestBuilder};
+use reqwest::blocking::Client;
 use serde_derive::{Deserialize, Serialize};
-use std::io::Read;
 
 #[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug)]
 struct FireplanAlarm {
@@ -35,7 +34,6 @@ pub fn submit(standort: crate::Standort, data: ParsedData) {
         ))
         .header("API-Key", standort.fireplan_api_key.clone())
         .header("accept", "*/*")
-        .body("the exact body that is sent")
         .send()
     {
         Ok(r) => {
@@ -49,7 +47,11 @@ pub fn submit(standort: crate::Standort, data: ParsedData) {
                     }
                 }
             } else {
-                error!("[{}] - Could not get API Key: {:?}", standort.standort, r.status());
+                error!(
+                    "[{}] - Could not get API Key: {:?}",
+                    standort.standort,
+                    r.status()
+                );
                 return;
             }
         }
@@ -59,10 +61,20 @@ pub fn submit(standort: crate::Standort, data: ParsedData) {
         }
     };
 
-    info!("[{}] - acquired API Key: {}", standort.standort, token_string);
+    info!(
+        "[{}] - acquired API Key: {}",
+        standort.standort, token_string
+    );
+
+    let token: ApiKey = match serde_json::from_str(&token_string) {
+        Ok(apikey) => apikey,
+        Err(e) => {
+            error!("could not deserialize token key: {}", e);
+            return;
+        }
+    };
 
     for ric in data.rics {
-
         let alarm = FireplanAlarm {
             ric: ric.ric,
             subRIC: ric.subric,
@@ -79,5 +91,45 @@ pub fn submit(standort: crate::Standort, data: ParsedData) {
 
         info!("[{}] - submitting Alarm: {:?}", standort.standort, alarm);
 
+        match client
+            .post("https://data.fireplan.de/api/Alarmierung")
+            .header("API-Token", token.utoken.clone())
+            .header("accept", "*/*")
+            .json(&alarm)
+            .send()
+        {
+            Ok(r) => {
+                println!("{:?}", r);
+                if r.status().is_success() {
+                    match r.text() {
+                        Ok(t) => {
+                            info!("[{}] - Posted alarm, server says: {}", standort.standort, t)
+                        }
+                        Err(e) => {
+                            error!("[{}] - Could get result text: {}", standort.standort, e);
+                            continue;
+                        }
+                    }
+                } else {
+                    error!(
+                        "[{}] - Could not post alarm: {:?}",
+                        standort.standort,
+                        r.status()
+                    );
+                    match r.text() {
+                        Ok(t) => info!("[{}] - server says: {}", standort.standort, t),
+                        Err(e) => {
+                            error!("[{}] - Could get result text: {}", standort.standort, e);
+                            continue;
+                        }
+                    }
+                    continue;
+                }
+            }
+            Err(e) => {
+                error!("[{}] - Could not post alarm: {}", standort.standort, e);
+                continue;
+            }
+        }
     }
 }
