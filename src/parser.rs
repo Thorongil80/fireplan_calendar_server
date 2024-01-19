@@ -103,7 +103,7 @@ pub fn parse(body_input: String, configuration: Configuration) -> Result<ParsedD
         }
     }
 
-    result.einsatzstichwort = result.einsatzstichwort.trim().to_string();
+    result.einsatzstichwort = result.einsatzstichwort.replace('/', "").trim().to_string();
     result.ortsteil = result.ortsteil.trim().to_string();
     result.objektname = result.objektname.trim().to_string();
     result.ort = result.ort.trim().to_string();
