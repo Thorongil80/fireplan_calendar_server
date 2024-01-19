@@ -1,3 +1,4 @@
+# these are evaluated on line basis
 regex_einsatzstichwort = '(?m)^Stichwort\s*:\s*\/\s*(.*)\s+\/\s*\/\s*$'
 regex_strasse = 'Straße\s*:\s*(\D*)*.*'
 regex_ort = 'Ort\s*:\s*\d*\s*(.*)'
@@ -6,12 +7,15 @@ regex_ortsteil = 'Ortsteil\s*:\s*\d*\s*(.*)'
 regex_einsatznrleitstelle = 'Einsatznummer\s+:\s(.*)\s*'
 regex_koordinaten = 'https://www.google.de/maps/place/(\d+.\d*,\d+.\d*)'
 regex_objektname = 'Objekt\s*:\s*(.*)'
+
+# this is evaluated on the complete email text, check multi-line mode in rust crate regex for syntax
 regex_zusatzinfo = '(?mRU)---------------------------\s*BEMERKUNG\s*---------------------------(.*)--------------------'
 
+# resolve text against RICs, searched in complete mail
 rics = [ { text = "Abcd", ric = "123456", subric = "B" },
          { text = "Xyz",  ric = "654321", subric = "B" }  ]
 
-
+# per standort add one section
 [[standorte]]
 standort = ""
 imap_server = ""
