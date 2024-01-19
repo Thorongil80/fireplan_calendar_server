@@ -1,12 +1,12 @@
-regex_einsatzstichwort = '^Stichwort\s*:\s*\/\s*(.*)\s+\/'
-regex_strasse = '^Straße\s+:\s+(\D*)'
-regex_ort = '^Ort\s+:\s\d*\s*(\D+)'
-regex_hausnummer = '^Straße\s+:\s+\D*\s+(\d+)'
-regex_ortsteil = '^Ortsteil\s+:\s+(.*)'
-regex_einsatznrleitstelle = '^Einsatznummer\s+:\s(.*)'
-regex_koordinaten = '^https:\/\/www.google.de\/maps\/place\/(.*)'
-regex_objektname = '^Objekt\s+:\s+(.*)'
-regex_zusatzinfo = '---------------------------\s*BEMERKUNG\s*---------------------------(.*)--------------------'
+regex_einsatzstichwort = '(?m)^Stichwort\s*:\s*\/\s*(.*)\s+\/\s*\/\s*$'
+regex_strasse = 'Straße\s*:\s*(\D*)*.*'
+regex_ort = 'Ort\s*:\s*\d*\s*(.*)'
+regex_hausnummer = 'Straße\s*:\s*\D*(\d*).*'
+regex_ortsteil = 'Ortsteil\s*:\s*\d*\s*(.*)'
+regex_einsatznrleitstelle = 'Einsatznummer\s+:\s(.*)\s*'
+regex_koordinaten = 'https://www.google.de/maps/place/(\d+.\d*,\d+.\d*)'
+regex_objektname = 'Objekt\s*:\s*(.*)'
+regex_zusatzinfo = '(?mRU)---------------------------\s*BEMERKUNG\s*---------------------------(.*)--------------------'
 
 rics = [ { text = "Abcd", ric = "123456", subric = "B" },
          { text = "Xyz",  ric = "654321", subric = "B" }  ]
