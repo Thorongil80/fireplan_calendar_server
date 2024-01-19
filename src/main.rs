@@ -32,6 +32,15 @@ pub struct Ric {
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Configuration {
+    regex_einsatzstichwort: String,
+    regex_strasse: String,
+    regex_ort: String,
+    regex_hausnummer: String,
+    regex_ortsteil: String,
+    regex_einsatznrleitstelle: String,
+    regex_koordinaten: String,
+    regex_zusatzinfo: String,
+    regex_objektname: String,
     rics: Vec<Ric>,
     standorte: Vec<Standort>,
 }
