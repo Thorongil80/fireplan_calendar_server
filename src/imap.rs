@@ -4,6 +4,7 @@ use log::{error, info};
 use mail_parser::MessageParser;
 use native_tls::TlsConnector;
 use std::time::Duration;
+use imap::extensions::idle::WaitOutcome;
 
 pub fn monitor_postbox(
     standort: crate::Standort,
@@ -137,9 +138,13 @@ pub fn monitor_postbox(
             match imap_session.idle() {
                 Ok(idle) => {
                     info!("[{}] - engaging IDLE", standort.standort);
-                    match idle.wait_keepalive() {
-                        Ok(_) => {
-                            info!("[{}] - New eMail has arrived", standort.standort);
+                    match idle.wait_with_timeout(Duration::from_secs(300)) {
+                        Ok(outcome) => {
+                            if outcome.eq(&WaitOutcome::MailboxChanged) {
+                                info!("New Mail has arrived");
+                            } else {
+                                info!("[{}] - 5 Minutest timeout passed", standort.standort);
+                            }
                         }
                         Err(_) => {
                             error!("[{}] - IDLE failed, maybe disconnect, try reconnect after 10 seconds", standort.standort);
