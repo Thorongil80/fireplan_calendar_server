@@ -82,7 +82,13 @@ fn main() {
     ])
     .unwrap();
 
-    info!("Configuration: {:?}", configuration);
+    let mut configuration_output = format!("Configuration: {:?}", configuration);
+
+    for standort in configuration.standorte.clone() {
+        configuration_output = configuration_output.replace(&standort.imap_password, "****");
+    }
+
+    info!("Configuration: {}", configuration_output);
 
     for standort in &configuration.standorte {
         match monitor_postbox(standort.clone(), configuration.clone()) {
