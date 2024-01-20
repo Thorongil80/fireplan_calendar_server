@@ -61,11 +61,6 @@ pub fn submit(standort: crate::Standort, data: ParsedData) {
         }
     };
 
-    info!(
-        "[{}] - acquired API Key: {}",
-        standort.standort, token_string
-    );
-
     let token: ApiKey = match serde_json::from_str(&token_string) {
         Ok(apikey) => apikey,
         Err(e) => {
@@ -73,6 +68,11 @@ pub fn submit(standort: crate::Standort, data: ParsedData) {
             return;
         }
     };
+
+    info!(
+        "[{}] - acquired API Token: {:?}",
+        standort.standort, token
+    );
 
     for ric in data.rics {
         let alarm = FireplanAlarm {
