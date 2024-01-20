@@ -86,6 +86,7 @@ fn main() {
 
     for standort in configuration.standorte.clone() {
         configuration_output = configuration_output.replace(&standort.imap_password, "****");
+        configuration_output = configuration_output.replace(&standort.fireplan_api_key, "****");
     }
 
     info!("Configuration: {}", configuration_output);
