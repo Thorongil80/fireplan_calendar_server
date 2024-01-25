@@ -111,6 +111,7 @@ pub fn parse(body_input: String, configuration: Configuration) -> Result<ParsedD
     result.einsatzstichwort = result.einsatzstichwort.trim().to_string();
     result.strasse = result.strasse.trim().to_string();
     result.hausnummer = result.hausnummer.trim().to_string();
+    result.zusatzinfo = result.zusatzinfo.trim().to_string();
 
     if result.einsatzstichwort.is_empty() {
         warn!("Parser: No EINSATZSTICHWORT found");
