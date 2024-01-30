@@ -77,12 +77,7 @@ fn main() {
             Config::default(),
             TerminalMode::Mixed,
             ColorChoice::Auto,
-        ),
-        WriteLogger::new(
-            LevelFilter::Trace,
-            Config::default(),
-            File::create("fireplan_alarm_imap.log").unwrap(),
-        ),
+        )
     ])
     .unwrap();
 
