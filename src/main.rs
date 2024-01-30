@@ -64,7 +64,7 @@ fn main() {
     } else {
         format!(
             "{}/fireplan_alarm_imap.conf",
-            homedir::get_my_home().unwrap().unwrap().to_string()
+            homedir::get_my_home().unwrap().unwrap().to_string_lossy()
         )
     };
     let content = fs::read_to_string(file).expect("Config file missing!");
