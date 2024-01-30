@@ -5,6 +5,7 @@ use serde_derive::Serialize;
 use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode, WriteLogger};
 use std::fs;
 use std::fs::File;
+use std::thread::JoinHandle;
 
 mod fireplan;
 mod imap;
@@ -94,14 +95,28 @@ fn main() {
 
     info!("Configuration: {}", configuration_output);
 
-    for standort in &configuration.standorte {
-        match monitor_postbox(standort.clone(), configuration.clone()) {
-            Ok(_) => {
-                info!("monitor done: {}", standort.standort)
-            }
-            Err(e) => {
-                error!("monitor failed: {}, {}", standort.standort, e)
-            }
-        };
+    let mut threads : Vec<JoinHandle<()>> = vec![];
+    let my_standorte = configuration.standorte.clone();
+
+    for standort in my_standorte {
+        let my_standort = standort.clone();
+        let my_configuration = configuration.clone();
+        let handle =
+            std::thread::spawn(
+                move || match monitor_postbox(my_standort, my_configuration.clone()) {
+                    Ok(_) => {
+                        info!("monitor done: {}", standort.standort)
+                    }
+                    Err(e) => {
+                        error!("monitor failed: {}, {}", standort.standort, e)
+                    }
+                },
+            );
+        threads.push(handle);
     }
+
+    for thread in threads {
+        let _ = thread.join();
+    }
+
 }
