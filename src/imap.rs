@@ -1,10 +1,10 @@
 use crate::{fireplan, parser};
 use anyhow::{anyhow, Result};
+use imap::extensions::idle::WaitOutcome;
 use log::{error, info};
 use mail_parser::MessageParser;
 use native_tls::TlsConnector;
 use std::time::Duration;
-use imap::extensions::idle::WaitOutcome;
 
 pub fn monitor_postbox(
     standort: crate::Standort,
@@ -90,7 +90,11 @@ pub fn monitor_postbox(
                                         info!("[{}] - {}", standort.standort, s);
                                         info!("[{}] - --------------------------------------------------------", standort.standort);
                                         info!("[{}] - PARSING...", standort.standort);
-                                        match parser::parse(standort.standort.clone(), s.to_string(), configuration.clone()) {
+                                        match parser::parse(
+                                            standort.standort.clone(),
+                                            s.to_string(),
+                                            configuration.clone(),
+                                        ) {
                                             Ok(d) => {
                                                 info!(
                                                     "[{}] - parsed message: {:?}",

@@ -62,7 +62,10 @@ fn main() {
             std::env::var("USERPROFILE").unwrap()
         )
     } else {
-        "~/fireplan_alarm_imap.conf".to_string()
+        format!(
+            "{}/fireplan_alarm_imap.conf",
+            homedir::get_my_home().unwrap().unwrap().to_string()
+        )
     };
     let content = fs::read_to_string(file).expect("Config file missing!");
     let configuration: Configuration = toml::from_str(content.as_str()).unwrap();

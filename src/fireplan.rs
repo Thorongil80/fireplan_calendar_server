@@ -69,10 +69,7 @@ pub fn submit(standort: crate::Standort, data: ParsedData) {
         }
     };
 
-    info!(
-        "[{}] - acquired API Token: {:?}",
-        standort.standort, token
-    );
+    info!("[{}] - acquired API Token: {:?}", standort.standort, token);
 
     for ric in data.rics {
         let alarm = FireplanAlarm {
