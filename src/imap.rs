@@ -90,7 +90,7 @@ pub fn monitor_postbox(
                                         info!("[{}] - {}", standort.standort, s);
                                         info!("[{}] - --------------------------------------------------------", standort.standort);
                                         info!("[{}] - PARSING...", standort.standort);
-                                        match parser::parse(s.to_string(), configuration.clone()) {
+                                        match parser::parse(standort.standort.clone(), s.to_string(), configuration.clone()) {
                                             Ok(d) => {
                                                 info!(
                                                     "[{}] - parsed message: {:?}",

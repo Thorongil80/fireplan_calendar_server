@@ -3,7 +3,7 @@ use anyhow::Result;
 use log::{error, warn};
 use regex::Regex;
 
-pub fn parse(body_input: String, configuration: Configuration) -> Result<ParsedData> {
+pub fn parse(standort: String, body_input: String, configuration: Configuration) -> Result<ParsedData> {
     let mut result = ParsedData {
         rics: vec![],
         einsatznrlst: "".to_string(),
@@ -26,7 +26,7 @@ pub fn parse(body_input: String, configuration: Configuration) -> Result<ParsedD
                 result.einsatznrlst = caps[1].to_string();
             }
         } else {
-            error!("regex_einsatznrlst is not a proper regular expression");
+            error!("[{}] - regex_einsatznrlst is not a proper regular expression", standort);
         }
 
         if let Ok(re) = Regex::new(configuration.regex_einsatzstichwort.as_str()) {
@@ -34,7 +34,7 @@ pub fn parse(body_input: String, configuration: Configuration) -> Result<ParsedD
                 result.einsatzstichwort = caps[1].to_string();
             }
         } else {
-            error!("regex_einsatzstichwort is not a proper regular expression");
+            error!("[{}] - regex_einsatzstichwort is not a proper regular expression", standort);
         }
 
         if let Ok(re) = Regex::new(configuration.regex_strasse.as_str()) {
@@ -42,7 +42,7 @@ pub fn parse(body_input: String, configuration: Configuration) -> Result<ParsedD
                 result.strasse = caps[1].to_string();
             }
         } else {
-            error!("regex_strasse is not a proper regular expression");
+            error!("[{}] - regex_strasse is not a proper regular expression", standort);
         }
 
         if let Ok(re) = Regex::new(configuration.regex_hausnummer.as_str()) {
@@ -50,7 +50,7 @@ pub fn parse(body_input: String, configuration: Configuration) -> Result<ParsedD
                 result.hausnummer = caps[1].to_string();
             }
         } else {
-            error!("regex_hausnummer is not a proper regular expression");
+            error!("[{}] - regex_hausnummer is not a proper regular expression", standort);
         }
 
         if let Ok(re) = Regex::new(configuration.regex_ort.as_str()) {
@@ -58,7 +58,7 @@ pub fn parse(body_input: String, configuration: Configuration) -> Result<ParsedD
                 result.ort = caps[1].to_string();
             }
         } else {
-            error!("regex_ort is not a proper regular expression");
+            error!("[{}] - regex_ort is not a proper regular expression", standort);
         }
 
         if let Ok(re) = Regex::new(configuration.regex_ortsteil.as_str()) {
@@ -66,7 +66,7 @@ pub fn parse(body_input: String, configuration: Configuration) -> Result<ParsedD
                 result.ortsteil = caps[1].to_string();
             }
         } else {
-            error!("regex_ortsteil is not a proper regular expression");
+            error!("[{}] - regex_ortsteil is not a proper regular expression", standort);
         }
 
         if let Ok(re) = Regex::new(configuration.regex_koordinaten.as_str()) {
@@ -74,7 +74,7 @@ pub fn parse(body_input: String, configuration: Configuration) -> Result<ParsedD
                 result.koordinaten = caps[1].to_string();
             }
         } else {
-            error!("regex_koordinaten is not a proper regular expression");
+            error!("[{}] - regex_koordinaten is not a proper regular expression", standort);
         }
 
         if let Ok(re) = Regex::new(configuration.regex_objektname.as_str()) {
@@ -82,7 +82,7 @@ pub fn parse(body_input: String, configuration: Configuration) -> Result<ParsedD
                 result.objektname = caps[1].to_string();
             }
         } else {
-            error!("regex_objektname is not a proper regular expression");
+            error!("[{}] - regex_objektname is not a proper regular expression", standort);
         }
     }
 
@@ -91,7 +91,7 @@ pub fn parse(body_input: String, configuration: Configuration) -> Result<ParsedD
             result.zusatzinfo = caps[1].to_string();
         }
     } else {
-        error!("regex_zusatzinfo is not a proper regular expression");
+        error!("[{}] - regex_zusatzinfo is not a proper regular expression", standort);
     }
 
     for line in body.lines() {
@@ -114,28 +114,28 @@ pub fn parse(body_input: String, configuration: Configuration) -> Result<ParsedD
     result.zusatzinfo = result.zusatzinfo.trim().to_string();
 
     if result.einsatzstichwort.is_empty() {
-        warn!("Parser: No EINSATZSTICHWORT found");
+        warn!("[{}] - Parser: No EINSATZSTICHWORT found", standort);
     }
     if result.ortsteil.is_empty() {
-        warn!("Parser: No ORTSTEIL found");
+        warn!("[{}] - Parser: No ORTSTEIL found", standort);
     }
     if result.objektname.is_empty() {
-        warn!("Parser: No OBJEKTNAME found");
+        warn!("[{}] - Parser: No OBJEKTNAME found", standort);
     }
     if result.ort.is_empty() {
-        warn!("Parser: No ORT found");
+        warn!("[{}] - Parser: No ORT found", standort);
     }
     if result.einsatznrlst.is_empty() {
-        warn!("Parser: No EINSATZNUMMERLEITSTELLE found");
+        warn!("[{}] - Parser: No EINSATZNUMMERLEITSTELLE found", standort);
     }
     if result.einsatzstichwort.is_empty() {
-        warn!("Parser: No EINSATZSTICHWORT found");
+        warn!("[{}] - Parser: No EINSATZSTICHWORT found", standort);
     }
     if result.strasse.is_empty() {
-        warn!("Parser: No STRASSE found");
+        warn!("[{}] - Parser: No STRASSE found", standort);
     }
     if result.hausnummer.is_empty() {
-        warn!("Parser: No HAUSNUMMER found");
+        warn!("[{}] - Parser: No HAUSNUMMER found", standort);
     }
 
     Ok(result)
