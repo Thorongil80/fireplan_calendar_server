@@ -15,3 +15,11 @@ sudo systemctl daemon-reload
 echo "Enabling systemd service on boot..."
 sudo systemctl enable fireplan_alarm_imap --now
 echo "Installation done"
+echo 
+echo "you can monitor the service via"
+echo
+echo "sudo journalctl -u fireplan_alarm_imap"
+echo
+echo "you can start/stop/restart the service via"
+echo
+echo "systemctl start|stop|restart fireplan_alarm_imap"
