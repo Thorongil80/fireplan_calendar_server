@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euxo pipefail
+
 echo "Building..."
 cargo build -r
 echo "Copying to /usr/local/bin"
