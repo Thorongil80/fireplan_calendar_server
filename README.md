@@ -11,5 +11,5 @@ Adapt fireplan_alarm_imap.service file to your needs.
 By default service runs automatically after boot as user "admin" after network is up and in multi-user mode.
 This makes it run e.g. in a default installation of Raspberry Pi OS.
 
-Adapt target.wants to run it in single-user as well if your machine is not booting through to multi-user.
+Adapt WantedBy to run it e.g. in single-user mode as well if your machine is not booting through to multi-user.
 Adapt user name to your needs. Attention: put config file to this user's home directory!
