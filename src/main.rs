@@ -2,9 +2,8 @@ use crate::imap::monitor_postbox;
 use log::{error, info, LevelFilter};
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
-use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode, WriteLogger};
+use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode};
 use std::fs;
-use std::fs::File;
 use std::thread::JoinHandle;
 
 mod fireplan;
