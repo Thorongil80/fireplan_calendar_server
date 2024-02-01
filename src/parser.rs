@@ -129,6 +129,10 @@ pub fn parse(
         // detect rics by text
         for ric in configuration.rics.clone() {
             if line.contains(ric.text.as_str()) {
+                // remove all previously found entries that are substrings, retain what is not a substring of the newly found
+                result.rics.retain(|x| ! ric.text.contains(x.clone().text.as_str()));
+
+                // push the newly found ric
                 result.rics.push(ric.clone());
             }
         }
