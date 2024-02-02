@@ -116,7 +116,7 @@ pub fn submit(standort: crate::Standort, data: ParsedData) {
                     match r.text() {
                         Ok(t) => info!("[{}] - server says: {}", standort.standort, t),
                         Err(e) => {
-                            error!("[{}] - Could get result text: {}", standort.standort, e);
+                            error!("[{}] - Could not get result text: {}", standort.standort, e);
                             continue;
                         }
                     }
