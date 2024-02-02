@@ -1,3 +1,6 @@
+# REGEX settings for extraction of data from the Mail, using Rust regex crate syntax
+# below regex examples match the current layout of ILS Karlsruhe
+
 # these are evaluated on line basis
 regex_einsatzstichwort = '(?m)^Stichwort\s*:\s*\/\s*(.*)\s+\/\s*\/\s*$'
 regex_strasse = 'Straße\s*:\s*(\D*)*.*'
@@ -11,9 +14,13 @@ regex_objektname = 'Objekt\s*:\s*(.*)'
 # this is evaluated on the complete email text, check multi-line mode in rust crate regex for syntax
 regex_zusatzinfo = '(?mRU)---------------------------\s*BEMERKUNG\s*---------------------------(.*)--------------------'
 
+# RIC list matching Text to RIC and SUBRIC
+
 # resolve text against RICs, searched line by line with longest matching text
 rics = [ { text = "Abcd", ric = "123456", subric = "B" },
          { text = "Xyz",  ric = "654321", subric = "B" }  ]
+
+# STANDORTE
 
 # per standort add one section
 [[standorte]]
