@@ -1,4 +1,4 @@
-use crate::{Configuration, ParsedData};
+use crate::{Configuration, ParsedData, Ric};
 use anyhow::Result;
 use log::{error, warn};
 use regex::Regex;
@@ -127,15 +127,17 @@ pub fn parse(
 
     for line in body.lines() {
         // detect rics by text
+        let mut temp_lines: Vec<Ric> = vec![];
         for ric in configuration.rics.clone() {
             if line.contains(ric.text.as_str()) {
                 // remove all previously found entries that are substrings, retain what is not a substring of the newly found
-                result.rics.retain(|x| ! ric.text.contains(x.clone().text.as_str()));
+                temp_lines.retain(|x| ! ric.text.contains(x.clone().text.as_str()));
 
                 // push the newly found ric
-                result.rics.push(ric.clone());
+                temp_lines.push(ric.clone());
             }
         }
+        result.rics.append(&mut temp_lines);
     }
 
     result.einsatzstichwort = result.einsatzstichwort.replace('/', "").trim().to_string();
