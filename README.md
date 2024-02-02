@@ -1,6 +1,6 @@
-## fireplan_alarm_imap
+# fireplan_alarm_imap
 
-# English
+## English
 Pull IMAP accounts using IMAP IDLE, evaluate email text, create alarm via Fireplan API
 
 Put config file fireplan_alarm_imap.conf to the %USERPROFILE% directory of the user running the program (Windows) or into user home ~ (Unixoid).
@@ -16,7 +16,7 @@ This makes it run e.g. in a default installation of Raspberry Pi OS.
 Adapt WantedBy to run it e.g. in single-user mode as well if your machine is not booting through to multi-user.
 Adapt user name to your needs. Attention: put config file to this user's home directory!
 
-# Deutsch
+## Deutsch
 Eine kleine Anwendung, die IMAP accounts mit IMAP IDLE nach neuen Emails abfragt, den Email-Text auswertet und einen Alarm an die API von Fireplan übergit.
 
 Man legt dazu die Konfigurationsdatei in das Verzeichnis %USERPROFILE% (Windows) bzw. ~ (Unixe) des Benutzers unter dem das Programm läuft.
