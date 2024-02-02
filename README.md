@@ -30,6 +30,6 @@ Eine Beispielkonfiguration (im TOML-Format) ist enthalten. Für jeden "Standort"
 
 Das skript install.sh compiliert und installiert das tool als systemd service beim Booten (Linux).
 
-Die Datei fireplan_alarm_imap.service muss dazu angepasst werden. Standardmäßig läuft es als Benutzer "admin" nachdem das Netzwerk gestartet ist im Multi-User-Modus. Das passt so für Raspberry Pi OS zum Beispiel. Achtung: die Konfigurationsdatei muss dann natürlich in diesen Benutzers home Verzeichnis liegen (/home/admin z.B.).
+Die Datei fireplan_alarm_imap.service muss dazu angepasst werden. Standardmäßig läuft es als Benutzer "admin" nachdem das Netzwerk gestartet ist im Multi-User-Modus. Das passt so für Raspberry Pi OS zum Beispiel. Achtung: die Konfigurationsdatei muss dann natürlich in dieses Benutzers home Verzeichnis liegen (/home/admin z.B.).
 
 Man muss "WantedBy" entsprechend anpassen, wenn das System nicht in den Multi-User-Modus sondenr ein anderes Runlevel (so sagte man früher dazu) bootet (relativ selten).
