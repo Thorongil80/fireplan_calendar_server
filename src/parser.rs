@@ -133,8 +133,13 @@ pub fn parse(
                 // remove all previously found entries that are substrings, retain what is not a substring of the newly found
                 temp_lines.retain(|x| ! ric.text.contains(x.clone().text.as_str()));
 
-                // push the newly found ric
-                temp_lines.push(ric.clone());
+                let new_ric = Ric {
+                    text: ric.text.clone(),
+                    ric: format!("{:0>7}", ric.ric),
+                    subric: ric.subric.clone(),
+                };
+
+                temp_lines.push(new_ric);
             }
         }
         result.rics.append(&mut temp_lines);
