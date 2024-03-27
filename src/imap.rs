@@ -1,4 +1,4 @@
-use crate::{fireplan, parser, ParsedData};
+use crate::{parser, ParsedData};
 use anyhow::{anyhow, Result};
 use imap::extensions::idle::WaitOutcome;
 use log::{error, info};
@@ -103,7 +103,6 @@ pub fn monitor_postbox(
                                                     standort.standort, d
                                                 );
                                                 let my_data = d.clone();
-                                                let my_standort = standort.clone();
 
                                                 match tx.send(my_data) {
                                                     Ok(..) => {
