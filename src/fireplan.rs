@@ -23,16 +23,16 @@ struct ApiKey {
     utoken: String,
 }
 
-pub fn submit(standort: crate::Standort, data: ParsedData) {
-    info!("[{}] - Fireplan submit triggered", standort.standort);
+pub fn submit(standort: String, api_key: String, data: ParsedData) {
+    info!("[{}] - Fireplan submit triggered", standort);
 
     let client = Client::new();
     let token_string = match client
         .get(format!(
             "https://data.fireplan.de/api/Register/{}",
-            standort.standort
+            standort
         ))
-        .header("API-Key", standort.fireplan_api_key.clone())
+        .header("API-Key", api_key.clone())
         .header("accept", "*/*")
         .send()
     {
@@ -42,21 +42,21 @@ pub fn submit(standort: crate::Standort, data: ParsedData) {
                 match r.text() {
                     Ok(t) => t,
                     Err(e) => {
-                        error!("[{}] - Could not get API Key: {}", standort.standort, e);
+                        error!("[{}] - Could not get API Key: {}", standort, e);
                         return;
                     }
                 }
             } else {
                 error!(
                     "[{}] - Could not get API Key: {:?}",
-                    standort.standort,
+                    standort,
                     r.status()
                 );
                 return;
             }
         }
         Err(e) => {
-            error!("[{}] - Could not get API Key: {}", standort.standort, e);
+            error!("[{}] - Could not get API Key: {}", standort, e);
             return;
         }
     };
@@ -69,7 +69,7 @@ pub fn submit(standort: crate::Standort, data: ParsedData) {
         }
     };
 
-    info!("[{}] - acquired API Token: {:?}", standort.standort, token);
+    info!("[{}] - acquired API Token: {:?}", standort, token);
 
     for ric in data.rics {
         let alarm = FireplanAlarm {
@@ -86,7 +86,7 @@ pub fn submit(standort: crate::Standort, data: ParsedData) {
             zusatzinfo: data.zusatzinfo.clone(),
         };
 
-        info!("[{}] - submitting Alarm: {:?}", standort.standort, alarm);
+        info!("[{}] - submitting Alarm: {:?}", standort, alarm);
 
         match client
             .post("https://data.fireplan.de/api/Alarmierung")
@@ -100,23 +100,23 @@ pub fn submit(standort: crate::Standort, data: ParsedData) {
                 if r.status().is_success() {
                     match r.text() {
                         Ok(t) => {
-                            info!("[{}] - Posted alarm, server says: {}", standort.standort, t)
+                            info!("[{}] - Posted alarm, server says: {}", standort, t)
                         }
                         Err(e) => {
-                            error!("[{}] - Could get result text: {}", standort.standort, e);
+                            error!("[{}] - Could get result text: {}", standort, e);
                             continue;
                         }
                     }
                 } else {
                     error!(
                         "[{}] - Could not post alarm: {:?}",
-                        standort.standort,
+                        standort,
                         r.status()
                     );
                     match r.text() {
-                        Ok(t) => info!("[{}] - server says: {}", standort.standort, t),
+                        Ok(t) => info!("[{}] - server says: {}", standort, t),
                         Err(e) => {
-                            error!("[{}] - Could not get result text: {}", standort.standort, e);
+                            error!("[{}] - Could not get result text: {}", standort, e);
                             continue;
                         }
                     }
@@ -124,7 +124,7 @@ pub fn submit(standort: crate::Standort, data: ParsedData) {
                 }
             }
             Err(e) => {
-                error!("[{}] - Could not post alarm: {}", standort.standort, e);
+                error!("[{}] - Could not post alarm: {}", standort, e);
                 continue;
             }
         }

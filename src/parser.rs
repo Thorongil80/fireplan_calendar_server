@@ -131,7 +131,7 @@ pub fn parse(
         for ric in configuration.rics.clone() {
             if line.contains(ric.text.as_str()) {
                 // remove all previously found entries that are substrings, retain what is not a substring of the newly found
-                temp_lines.retain(|x| ! ric.text.contains(x.clone().text.as_str()));
+                temp_lines.retain(|x| !ric.text.contains(x.clone().text.as_str()));
 
                 let new_ric = Ric {
                     text: ric.text.clone(),

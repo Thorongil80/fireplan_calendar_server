@@ -1,12 +1,14 @@
-use crate::{fireplan, parser};
+use crate::{fireplan, parser, ParsedData};
 use anyhow::{anyhow, Result};
 use imap::extensions::idle::WaitOutcome;
 use log::{error, info};
 use mail_parser::MessageParser;
 use native_tls::TlsConnector;
+use std::sync::mpsc::Sender;
 use std::time::Duration;
 
 pub fn monitor_postbox(
+    tx: Sender<ParsedData>,
     standort: crate::Standort,
     configuration: crate::Configuration,
 ) -> Result<()> {
@@ -102,9 +104,16 @@ pub fn monitor_postbox(
                                                 );
                                                 let my_data = d.clone();
                                                 let my_standort = standort.clone();
-                                                std::thread::spawn(move || {
-                                                    fireplan::submit(my_standort, my_data);
-                                                });
+
+                                                match tx.send(my_data) {
+                                                    Ok(..) => {
+                                                        info!("submitted to main thread")
+                                                    }
+                                                    Err(e) => error!(
+                                                        "Could not submit to main thread: {}",
+                                                        e
+                                                    ),
+                                                }
                                             }
                                             Err(e) => {
                                                 error!(

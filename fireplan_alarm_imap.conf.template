@@ -1,3 +1,5 @@
+fireplan_api_key = "xxxxxxxxxxxxxxx"
+
 # REGEX settings for extraction of data from the Mail, using Rust regex crate syntax
 # below regex examples match the current layout of ILS Karlsruhe
 
@@ -29,4 +31,3 @@ imap_server = "imap.blabla.xx"
 imap_port = 993
 imap_user = "alarmmail@ff-flammhausen.de"
 imap_password = "supergeheim"
-fireplan_api_key = "xxxxxxxxxxxxxxx"
