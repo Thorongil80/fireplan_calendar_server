@@ -1,5 +1,5 @@
 [Unit]
-Description=Fireplan Alarm IMAP monitor
+Description=Fireplan Calendar Server
 After=network.target
 StartLimitIntervalSec=200
 StartLimitBurst=10
@@ -8,6 +8,6 @@ Type=simple
 Restart=always
 RestartSec=10
 User=admin
-ExecStart=/usr/local/bin/fireplan_alarm_imap
+ExecStart=/usr/local/bin/fireplan_calendar_server
 [Install]
 WantedBy=multi-user.target
