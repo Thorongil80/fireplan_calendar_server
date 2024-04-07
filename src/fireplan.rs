@@ -157,66 +157,46 @@ fn generate_calendars(calendars: Vec<Kalender>, token: &ApiKey) -> Result<()> {
                     Err(e) => return Err(anyhow!(e)),
                 };
 
-            let mut calendar = Calendar::new();
+            let mut calendar_out = Calendar::new();
+
+            calendar_out.name(calendar.kalenderName().as_str());
 
             for termin in termine {
                 info!("{:?}", termin);
-                let event: CalendarComponent = if *termin.allDay() {
-                    CalendarComponent::Event(
-                        Event::new()
-                            .all_day(
-                                NaiveDate::from_str(
-                                    termin
-                                        .startDate
-                                        .unwrap_or("1970-01-01".to_string())
-                                        .as_str(),
-                                )
+                if *termin.allDay() {
+                    let event = Event::new()
+                        .all_day(
+                            NaiveDate::from_str(termin.startDate.unwrap_or_default().as_str())
                                 .unwrap_or_default(),
-                            )
-                            .summary(termin.subject.unwrap_or_default().as_str())
-                            .description(termin.description.unwrap_or_default().as_str())
-                            .done(),
-                    )
+                        )
+                        .summary(termin.subject.unwrap_or_default().as_str())
+                        .description(termin.description.unwrap_or_default().as_str())
+                        .class(Class::Public)
+                        .done();
+                    info!("{:?}", event);
+                    calendar_out.push(event);
                 } else {
-                    CalendarComponent::Event(
-                        Event::new()
-                            .summary(termin.subject.unwrap_or_default().as_str())
-                            .description(termin.description.unwrap_or_default().as_str())
-                            .starts(
-                                NaiveDate::from_str(
-                                    termin
-                                        .startDate
-                                        .unwrap_or("1970-01-01 00:00:00".to_string())
-                                        .as_str(),
-                                )
+                    let event = Event::new()
+                        .summary(termin.subject.unwrap_or_default().as_str())
+                        .description(termin.description.unwrap_or_default().as_str())
+                        .starts(
+                            NaiveDate::from_str(termin.startDate.unwrap_or_default().as_str())
                                 .unwrap_or_default(),
-                            )
-                            .class(Class::Confidential)
-                            .ends(
-                                NaiveDate::from_str(
-                                    termin
-                                        .endDate
-                                        .unwrap_or("1970-01-01 00:00:00".to_string())
-                                        .as_str(),
-                                )
+                        )
+                        .class(Class::Public)
+                        .ends(
+                            NaiveDate::from_str(termin.endDate.unwrap_or_default().as_str())
                                 .unwrap_or_default(),
-                            )
-                            // .append_property(
-                            //     Property::new("TEST", "FOOBAR")
-                            //         .add_parameter("IMPORTANCE", "very")
-                            //         .add_parameter("DUE", "tomorrow")
-                            //         .done(),
-                            // )
-                            .done(),
-                    )
-                };
-                info!("{:?}", event);
-                calendar.push(event);
-            }
+                        )
+                        .done();
 
-            calendar.timezone("Europe/Berlin");
-            calendar.done();
-            println!("{}", calendar);
+                    info!("{:?}", event);
+                    calendar_out.push(event);
+                }
+            }
+            calendar_out.timezone("Europe/Berlin");
+            calendar_out.done();
+            let _ = calendar_out.print();
         }
     }
 
