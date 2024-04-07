@@ -1,26 +1,39 @@
-use crate::ParsedData;
+use crate::{Configuration, ParsedData};
 use log::{error, info};
 use reqwest::blocking::Client;
 use serde_derive::{Deserialize, Serialize};
+use anyhow::Result;
 
 #[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug)]
-struct FireplanAlarm {
-    ric: String,
-    subRIC: String,
-    einsatznrlst: String,
-    strasse: String,
-    hausnummer: String,
-    ort: String,
-    ortsteil: String,
-    objektname: String,
-    koordinaten: String,
-    einsatzstichwort: String,
-    zusatzinfo: String,
+struct FireplanTermine {
+    startDate:	Option<String>,
+    endDate:	Option<String>,
+    allDay:	bool,
+    subject: Option<String>,
+    location: Option<String>,
+    description: Option<String>,
+    jahr: Option<String>,
+    monat: Option<String>,
+    kalenderID:	i32
 }
+
+
 
 #[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug)]
 struct ApiKey {
     utoken: String,
+}
+
+pub fn fetch_calendars(standort: String, api_key: String) -> String {
+    info!("[{}] - Fetch calendars", standort);
+
+
+    "".to_string()
+}
+
+
+pub fn monitor_calendars(config: &Configuration) -> Result<()> {
+    Ok(())
 }
 
 pub fn submit(standort: String, api_key: String, data: ParsedData) {
@@ -72,19 +85,7 @@ pub fn submit(standort: String, api_key: String, data: ParsedData) {
     info!("[{}] - acquired API Token: {:?}", standort, token);
 
     for ric in data.rics {
-        let alarm = FireplanAlarm {
-            ric: ric.ric,
-            subRIC: ric.subric,
-            einsatznrlst: data.einsatznrlst.clone(),
-            strasse: data.strasse.clone(),
-            hausnummer: data.hausnummer.clone(),
-            ort: data.ort.clone(),
-            ortsteil: data.ortsteil.clone(),
-            objektname: data.objektname.clone(),
-            koordinaten: data.koordinaten.clone(),
-            einsatzstichwort: data.einsatzstichwort.clone(),
-            zusatzinfo: data.zusatzinfo.clone(),
-        };
+        let alarm = String::new();
 
         info!("[{}] - submitting Alarm: {:?}", standort, alarm);
 

@@ -1,5 +1,4 @@
 use std::collections::HashSet;
-use crate::imap::monitor_postbox;
 use log::{error, info, LevelFilter, warn};
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
@@ -7,10 +6,9 @@ use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode};
 use std::fs;
 use std::sync::mpsc;
 use std::thread::JoinHandle;
+use crate::fireplan::monitor_calendars;
 
 mod fireplan;
-mod imap;
-mod parser;
 
 #[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug)]
 pub struct Standort {
@@ -92,14 +90,11 @@ fn main() {
     let mut threads: Vec<JoinHandle<()>> = vec![];
     let my_standorte = configuration.standorte.clone();
 
-    let (tx, rx) = mpsc::channel();
-
     for standort in my_standorte {
         let my_standort = standort.clone();
         let my_configuration = configuration.clone();
-        let my_tx = tx.clone();
         let handle = std::thread::spawn(move || {
-            match monitor_postbox(my_tx, my_standort, my_configuration.clone()) {
+            match monitor_calendars(&my_configuration) {
                 Ok(_) => {
                     info!("monitor done: {}", standort.standort)
                 }
@@ -111,29 +106,7 @@ fn main() {
         threads.push(handle);
     }
 
-    let mut known_rics : HashSet<(String,String)> = HashSet::new();
-
-    loop {
-        match rx.recv() {
-            Ok(mut data) => {
-                let mut alarmier_rics: Vec<Ric> = vec![];
-                for ric in &data.rics {
-                    if ! known_rics.contains(&(data.einsatznrlst.clone(), ric.ric.clone())) {
-                        known_rics.insert((data.einsatznrlst.clone(), ric.ric.clone()));
-                        alarmier_rics.push(ric.clone());
-                    }
-                }
-                if alarmier_rics.is_empty() {
-                    warn!("All contained RICs already submitted for this EinsatzNrLeitstelle, do not submit this alarm")
-                } else {
-                    data.rics = alarmier_rics;
-                    info!("Submitting to Fireplan Standort Verwaltung");
-                    fireplan::submit("Verwaltung".to_string(), configuration.fireplan_api_key.clone(), data);
-                }
-            }
-            Err(e) => {
-                error!("Receive error: {}", e);
-            }
-        }
+    for handle in threads {
+        let _ = handle.join();
     }
 }
