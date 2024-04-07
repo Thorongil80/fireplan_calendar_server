@@ -1,10 +1,16 @@
 use crate::Configuration;
 use anyhow::{anyhow, Result};
+use chrono::NaiveDate;
+use derive_getters::Getters;
+use icalendar::CalendarDateTime::Utc;
+use icalendar::{Calendar, CalendarComponent, Class, Component, Event, EventLike, Property};
 use log::{error, info};
 use reqwest::blocking::Client;
 use serde_derive::{Deserialize, Serialize};
+use std::str::FromStr;
+use std::time::Duration;
 
-#[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug)]
+#[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug, Getters)]
 struct FireplanTermine {
     startDate: Option<String>,
     endDate: Option<String>,
@@ -17,20 +23,24 @@ struct FireplanTermine {
     kalenderID: i32,
 }
 
+#[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug, Getters)]
+struct Kalender {
+    kalenderID: i32,
+    kalenderName: String,
+    standort: String,
+}
+
 #[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug)]
 struct ApiKey {
     utoken: String,
 }
 
-pub fn fetch_calendars(standort: String, api_key: String) -> Result<String> {
-    info!("[{}] - Fetch calendars", standort);
+fn fetch_calendars(api_key: String) -> Result<(Vec<Kalender>, ApiKey)> {
+    info!("Fetch calendars");
 
     let client = Client::new();
     let token_string = match client
-        .get(format!(
-            "https://data.fireplan.de/api/Register/{}",
-            standort
-        ))
+        .get("https://data.fireplan.de/api/Register/Verwaltung".to_string())
         .header("API-Key", api_key.clone())
         .header("accept", "*/*")
         .send()
@@ -41,22 +51,18 @@ pub fn fetch_calendars(standort: String, api_key: String) -> Result<String> {
                 match r.text() {
                     Ok(t) => t,
                     Err(e) => {
-                        error!("[{}] - Could not get API Key: {}", standort, e);
-                        return Err(anyhow!("[{}] - Could not get API Key: {}", standort, e));
+                        error!("Could not get API Key: {}", e);
+                        return Err(anyhow!("Could not get API Key: {}", e));
                     }
                 }
             } else {
-                error!("[{}] - Could not get API Key: {:?}", standort, r.status());
-                return Err(anyhow!(
-                    "[{}] - Could not get API Key: {}",
-                    standort,
-                    r.status()
-                ));
+                error!("Could not get API Key: {:?}", r.status());
+                return Err(anyhow!("Could not get API Key: {}", r.status()));
             }
         }
         Err(e) => {
-            error!("[{}] - Could not get API Key: {}", standort, e);
-            return Err(anyhow!("[{}] - Could not get API Key: {}", standort, e));
+            error!("Could not get API Key: {}", e);
+            return Err(anyhow!("Could not get API Key: {}", e));
         }
     };
 
@@ -64,21 +70,172 @@ pub fn fetch_calendars(standort: String, api_key: String) -> Result<String> {
         Ok(apikey) => apikey,
         Err(e) => {
             error!("could not deserialize token key: {}", e);
-            return Err(anyhow!(
-                "[{}] - could not deserialize token key: {}",
-                standort,
-                e
-            ));
+            return Err(anyhow!("could not deserialize token key: {}", e));
         }
     };
 
-    info!("[{}] - acquired API Token: {:?}", standort, token);
+    info!("acquired API Token: {:?}", token);
 
-    Ok("".to_string())
+    let kalender_string = match client
+        .get("https://data.fireplan.de/api/Kalender".to_string())
+        .header("API-Token", token.utoken.clone())
+        .header("accept", "application/json")
+        .send()
+    {
+        Ok(r) => {
+            println!("{:?}", r);
+            if r.status().is_success() {
+                match r.text() {
+                    Ok(t) => t,
+                    Err(e) => {
+                        error!("Could not get calendar list: {}", e);
+                        return Err(anyhow!("Could not get calendar list: {}", e));
+                    }
+                }
+            } else {
+                error!("Could not get calendar list: {:?}", r.status());
+                return Err(anyhow!("Could not get calendar list: {}", r.status()));
+            }
+        }
+        Err(e) => {
+            error!("Could not get calendar list: {}", e);
+            return Err(anyhow!("Could not get calendar list: {}", e));
+        }
+    };
+
+    let kalender = match serde_json::from_str::<Vec<Kalender>>(&kalender_string) {
+        Ok(k) => k,
+        Err(e) => return Err(anyhow!("Could not parse calendar list: {}", e)),
+    };
+
+    Ok((kalender, token))
+}
+
+fn generate_calendars(calendars: Vec<Kalender>, token: &ApiKey) -> Result<()> {
+    let client = Client::new();
+
+    for calendar in calendars {
+        if calendar.kalenderName.contains("> Berichte")
+            || calendar.kalenderName.contains("> Gesamtwehrkalender")
+        {
+            println!("{:?}", calendar);
+
+            let termine_string = match client
+                .get(format!(
+                    "https://data.fireplan.de/api/Termine/{}",
+                    calendar.kalenderID
+                ))
+                .header("API-Token", token.utoken.clone())
+                .header("accept", "application/json")
+                .send()
+            {
+                Ok(r) => {
+                    println!("{:?}", r);
+                    if r.status().is_success() {
+                        match r.text() {
+                            Ok(t) => t,
+                            Err(e) => {
+                                error!("Could not get calendar list: {}", e);
+                                return Err(anyhow!("Could not get calendar list: {}", e));
+                            }
+                        }
+                    } else {
+                        error!("Could not get calendar list: {:?}", r.status());
+                        return Err(anyhow!("Could not get calendar list: {}", r.status()));
+                    }
+                }
+                Err(e) => {
+                    error!("Could not get calendar list: {}", e);
+                    return Err(anyhow!("Could not get calendar list: {}", e));
+                }
+            };
+
+            info!("{:?}", termine_string);
+            let termine =
+                match serde_json::from_str::<Vec<FireplanTermine>>(termine_string.as_str()) {
+                    Ok(t) => t,
+                    Err(e) => return Err(anyhow!(e)),
+                };
+
+            let mut calendar = Calendar::new();
+
+            for termin in termine {
+                info!("{:?}", termin);
+                let event: CalendarComponent = if *termin.allDay() {
+                    CalendarComponent::Event(
+                        Event::new()
+                            .all_day(
+                                NaiveDate::from_str(
+                                    termin
+                                        .startDate
+                                        .unwrap_or("1970-01-01".to_string())
+                                        .as_str(),
+                                )
+                                .unwrap_or_default(),
+                            )
+                            .summary(termin.subject.unwrap_or_default().as_str())
+                            .description(termin.description.unwrap_or_default().as_str())
+                            .done(),
+                    )
+                } else {
+                    CalendarComponent::Event(
+                        Event::new()
+                            .summary(termin.subject.unwrap_or_default().as_str())
+                            .description(termin.description.unwrap_or_default().as_str())
+                            .starts(
+                                NaiveDate::from_str(
+                                    termin
+                                        .startDate
+                                        .unwrap_or("1970-01-01 00:00:00".to_string())
+                                        .as_str(),
+                                )
+                                .unwrap_or_default(),
+                            )
+                            .class(Class::Confidential)
+                            .ends(
+                                NaiveDate::from_str(
+                                    termin
+                                        .endDate
+                                        .unwrap_or("1970-01-01 00:00:00".to_string())
+                                        .as_str(),
+                                )
+                                .unwrap_or_default(),
+                            )
+                            // .append_property(
+                            //     Property::new("TEST", "FOOBAR")
+                            //         .add_parameter("IMPORTANCE", "very")
+                            //         .add_parameter("DUE", "tomorrow")
+                            //         .done(),
+                            // )
+                            .done(),
+                    )
+                };
+                info!("{:?}", event);
+                calendar.push(event);
+            }
+
+            calendar.timezone("Europe/Berlin");
+            calendar.done();
+            println!("{}", calendar);
+        }
+    }
+
+    Ok(())
 }
 
 pub fn monitor_calendars(config: &Configuration) -> Result<()> {
-    Ok(())
+    loop {
+        match fetch_calendars(config.fireplan_api_key().to_string()) {
+            Ok((v, token)) => {
+                //info!("{:?}", s);
+
+                let _ = generate_calendars(v, &token);
+            }
+            Err(e) => error!("Could not fetch calendars: {}", e),
+        };
+
+        std::thread::sleep(Duration::from_secs(60));
+    }
 }
 
 // pub fn submit(standort: String, api_key: String, data: ParsedData) {

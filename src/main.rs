@@ -1,32 +1,30 @@
 use crate::fireplan::monitor_calendars;
-use log::{error, info, warn, LevelFilter};
+use derive_getters::Getters;
+use log::{error, info, LevelFilter};
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode};
-use std::collections::HashSet;
 use std::fs;
-use std::sync::mpsc;
-use std::thread::JoinHandle;
 
 mod fireplan;
 
-#[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug)]
+#[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug, Getters)]
 pub struct Kalender {
     name: String,
     kalender_id: i32,
 }
 
-#[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug)]
+#[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug, Getters)]
 pub struct Ric {
     text: String,
     ric: String,
     subric: String,
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, Getters)]
 pub struct Configuration {
     fireplan_api_key: String,
-    kalender: Vec<Kalender>,
+    //    kalender: Vec<Kalender>,
 }
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct ParsedData {
