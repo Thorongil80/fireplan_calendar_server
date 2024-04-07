@@ -1,22 +1,19 @@
-use std::collections::HashSet;
-use log::{error, info, LevelFilter, warn};
+use crate::fireplan::monitor_calendars;
+use log::{error, info, warn, LevelFilter};
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
 use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode};
+use std::collections::HashSet;
 use std::fs;
 use std::sync::mpsc;
 use std::thread::JoinHandle;
-use crate::fireplan::monitor_calendars;
 
 mod fireplan;
 
 #[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug)]
-pub struct Standort {
-    standort: String,
-    imap_server: String,
-    imap_port: u16,
-    imap_user: String,
-    imap_password: String,
+pub struct Kalender {
+    name: String,
+    kalender_id: i32,
 }
 
 #[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug)]
@@ -29,17 +26,7 @@ pub struct Ric {
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct Configuration {
     fireplan_api_key: String,
-    regex_einsatzstichwort: String,
-    regex_strasse: String,
-    regex_ort: String,
-    regex_hausnummer: String,
-    regex_ortsteil: String,
-    regex_einsatznrleitstelle: String,
-    regex_koordinaten: String,
-    regex_zusatzinfo: String,
-    regex_objektname: String,
-    rics: Vec<Ric>,
-    standorte: Vec<Standort>,
+    kalender: Vec<Kalender>,
 }
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct ParsedData {
@@ -80,33 +67,19 @@ fn main() {
 
     let mut configuration_output = format!("Configuration: {:?}", configuration);
 
-    for standort in configuration.standorte.clone() {
-        configuration_output = configuration_output.replace(&standort.imap_password, "****");
-        configuration_output = configuration_output.replace(&configuration.fireplan_api_key, "****");
-    }
+    configuration_output = configuration_output.replace(&configuration.fireplan_api_key, "****");
 
     info!("Configuration: {}", configuration_output);
 
-    let mut threads: Vec<JoinHandle<()>> = vec![];
-    let my_standorte = configuration.standorte.clone();
+    let my_configuration = configuration.clone();
+    let handle = std::thread::spawn(move || match monitor_calendars(&my_configuration) {
+        Ok(_) => {
+            info!("monitor done",)
+        }
+        Err(e) => {
+            error!("monitor failed: {}", e)
+        }
+    });
 
-    for standort in my_standorte {
-        let my_standort = standort.clone();
-        let my_configuration = configuration.clone();
-        let handle = std::thread::spawn(move || {
-            match monitor_calendars(&my_configuration) {
-                Ok(_) => {
-                    info!("monitor done: {}", standort.standort)
-                }
-                Err(e) => {
-                    error!("monitor failed: {}, {}", standort.standort, e)
-                }
-            }
-        });
-        threads.push(handle);
-    }
-
-    for handle in threads {
-        let _ = handle.join();
-    }
+    let _ = handle.join();
 }
