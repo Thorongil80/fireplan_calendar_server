@@ -2,5 +2,23 @@ fireplan_api_key = "xxxxxxxxxxxxxxx"
 
 # welche Kalender exponieren?
 [[kalender]]
-name = "Flammhausen"
-kalender_id = 993
+name = "> Berichte"
+standort = "Stettfeld"
+label = "Stettfeld"
+prefix = "S"
+
+
+name = "> Berichte"
+standort = "Ubstadt"
+label = "Ubstadt"
+prefix = "U"
+
+name = "> Berichte"
+standort = "Weiher"
+label = "Weiher"
+prefix = "W"
+
+name = "> Berichte"
+standort = "Zeutern"
+label = "Zeutern"
+prefix = "Z"
