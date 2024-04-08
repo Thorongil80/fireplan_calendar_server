@@ -166,8 +166,11 @@ fn generate_calendars(calendars: Vec<Kalender>, token: &ApiKey) -> Result<()> {
                 if *termin.allDay() {
                     let event = Event::new()
                         .all_day(
-                            NaiveDate::from_str(termin.startDate.unwrap_or_default().as_str())
-                                .unwrap_or_default(),
+                            NaiveDate::parse_from_str(
+                                termin.startDate.unwrap_or_default().as_str(),
+                                "%m/%d/%Y %_I:%M:%S %P",
+                            )
+                            .unwrap_or_default(),
                         )
                         .summary(termin.subject.unwrap_or_default().as_str())
                         .description(termin.description.unwrap_or_default().as_str())
@@ -180,13 +183,19 @@ fn generate_calendars(calendars: Vec<Kalender>, token: &ApiKey) -> Result<()> {
                         .summary(termin.subject.unwrap_or_default().as_str())
                         .description(termin.description.unwrap_or_default().as_str())
                         .starts(
-                            NaiveDate::from_str(termin.startDate.unwrap_or_default().as_str())
-                                .unwrap_or_default(),
+                            NaiveDate::parse_from_str(
+                                termin.startDate.unwrap_or_default().as_str(),
+                                "%m/%d/%Y %_I:%M:%S %P",
+                            )
+                            .unwrap_or_default(),
                         )
                         .class(Class::Public)
                         .ends(
-                            NaiveDate::from_str(termin.endDate.unwrap_or_default().as_str())
-                                .unwrap_or_default(),
+                            NaiveDate::parse_from_str(
+                                termin.endDate.unwrap_or_default().as_str(),
+                                "%m/%d/%Y %_I:%M:%S %P",
+                            )
+                            .unwrap_or_default(),
                         )
                         .done();
 
