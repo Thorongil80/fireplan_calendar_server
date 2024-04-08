@@ -2,8 +2,7 @@ use crate::Configuration;
 use anyhow::{anyhow, Result};
 use chrono::NaiveDate;
 use derive_getters::Getters;
-use icalendar::CalendarDateTime::Utc;
-use icalendar::{Calendar, CalendarComponent, Class, Component, Event, EventLike, Property};
+use icalendar::{Calendar, Class, Component, Event, EventLike};
 use log::{error, info};
 use reqwest::blocking::Client;
 use serde_derive::{Deserialize, Serialize};
@@ -203,9 +202,17 @@ fn generate_calendars(calendars: Vec<Kalender>, token: &ApiKey) -> Result<()> {
                     calendar_out.push(event);
                 }
             }
+            calendar_out.description(
+                format!(
+                    "{} of Standort {}",
+                    calendar.kalenderName(),
+                    calendar.standort()
+                )
+                .as_str(),
+            );
             calendar_out.timezone("Europe/Berlin");
-            calendar_out.done();
-            let _ = calendar_out.print();
+            //calendar_out.done();
+            println!("{}", calendar_out);
         }
     }
 
@@ -226,91 +233,3 @@ pub fn monitor_calendars(config: &Configuration) -> Result<()> {
         std::thread::sleep(Duration::from_secs(60));
     }
 }
-
-// pub fn submit(standort: String, api_key: String, data: ParsedData) {
-//     info!("[{}] - Fireplan submit triggered", standort);
-//
-//     let client = Client::new();
-//     let token_string = match client
-//         .get(format!(
-//             "https://data.fireplan.de/api/Register/{}",
-//             standort
-//         ))
-//         .header("API-Key", api_key.clone())
-//         .header("accept", "*/*")
-//         .send()
-//     {
-//         Ok(r) => {
-//             println!("{:?}", r);
-//             if r.status().is_success() {
-//                 match r.text() {
-//                     Ok(t) => t,
-//                     Err(e) => {
-//                         error!("[{}] - Could not get API Key: {}", standort, e);
-//                         return;
-//                     }
-//                 }
-//             } else {
-//                 error!("[{}] - Could not get API Key: {:?}", standort, r.status());
-//                 return;
-//             }
-//         }
-//         Err(e) => {
-//             error!("[{}] - Could not get API Key: {}", standort, e);
-//             return;
-//         }
-//     };
-//
-//     let token: ApiKey = match serde_json::from_str(&token_string) {
-//         Ok(apikey) => apikey,
-//         Err(e) => {
-//             error!("could not deserialize token key: {}", e);
-//             return;
-//         }
-//     };
-//
-//     info!("[{}] - acquired API Token: {:?}", standort, token);
-//
-//     for ric in data.rics {
-//         let alarm = String::new();
-//
-//         info!("[{}] - submitting Alarm: {:?}", standort, alarm);
-//
-//         match client
-//             .post("https://data.fireplan.de/api/Alarmierung")
-//             .header("API-Token", token.utoken.clone())
-//             .header("accept", "*/*")
-//             .json(&alarm)
-//             .send()
-//         {
-//             Ok(r) => {
-//                 println!("{:?}", r);
-//                 if r.status().is_success() {
-//                     match r.text() {
-//                         Ok(t) => {
-//                             info!("[{}] - Posted alarm, server says: {}", standort, t)
-//                         }
-//                         Err(e) => {
-//                             error!("[{}] - Could get result text: {}", standort, e);
-//                             continue;
-//                         }
-//                     }
-//                 } else {
-//                     error!("[{}] - Could not post alarm: {:?}", standort, r.status());
-//                     match r.text() {
-//                         Ok(t) => info!("[{}] - server says: {}", standort, t),
-//                         Err(e) => {
-//                             error!("[{}] - Could not get result text: {}", standort, e);
-//                             continue;
-//                         }
-//                     }
-//                     continue;
-//                 }
-//             }
-//             Err(e) => {
-//                 error!("[{}] - Could not post alarm: {}", standort, e);
-//                 continue;
-//             }
-//         }
-//     }
-// }
