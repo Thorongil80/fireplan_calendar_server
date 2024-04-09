@@ -1,6 +1,7 @@
 fireplan_api_key = "xxxxxxxxxxxxxxx"
 präfix_gesamtwehr = "UW"
 zielordner = "/tmp/fireplan_ical"
+refresh_seconds = 900
 
 # welche Kalender exponieren?
 [[kalender]]

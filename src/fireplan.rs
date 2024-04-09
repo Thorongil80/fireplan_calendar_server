@@ -6,6 +6,10 @@ use icalendar::{Calendar, Class, Component, Event, EventLike};
 use log::{error, info};
 use reqwest::blocking::Client;
 use serde_derive::{Deserialize, Serialize};
+use std::fs;
+use std::fs::OpenOptions;
+use std::io::{read_to_string, Write};
+use std::path::Path;
 use std::str::FromStr;
 use std::time::Duration;
 
@@ -23,7 +27,7 @@ struct FireplanTermine {
 }
 
 #[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug, Getters)]
-struct Kalender {
+struct FireplanKalender {
     kalenderID: i32,
     kalenderName: String,
     standort: String,
@@ -34,13 +38,13 @@ struct ApiKey {
     utoken: String,
 }
 
-fn fetch_calendars(api_key: String) -> Result<(Vec<Kalender>, ApiKey)> {
+fn fetch_calendars(config: &Configuration) -> Result<(Vec<FireplanKalender>, ApiKey)> {
     info!("Fetch calendars");
 
     let client = Client::new();
     let token_string = match client
         .get("https://data.fireplan.de/api/Register/Verwaltung".to_string())
-        .header("API-Key", api_key.clone())
+        .header("API-Key", config.fireplan_api_key.clone())
         .header("accept", "*/*")
         .send()
     {
@@ -102,7 +106,7 @@ fn fetch_calendars(api_key: String) -> Result<(Vec<Kalender>, ApiKey)> {
         }
     };
 
-    let kalender = match serde_json::from_str::<Vec<Kalender>>(&kalender_string) {
+    let kalender = match serde_json::from_str::<Vec<FireplanKalender>>(&kalender_string) {
         Ok(k) => k,
         Err(e) => return Err(anyhow!("Could not parse calendar list: {}", e)),
     };
@@ -110,15 +114,18 @@ fn fetch_calendars(api_key: String) -> Result<(Vec<Kalender>, ApiKey)> {
     Ok((kalender, token))
 }
 
-fn generate_calendars(calendars: Vec<Kalender>, token: &ApiKey) -> Result<()> {
+fn get_calendar(
+    fireplan_calendars: &Vec<FireplanKalender>,
+    standort: &str,
+    name: &str,
+    praefix: &str,
+    token: &ApiKey,
+) -> Result<Calendar> {
     let client = Client::new();
 
-    for calendar in calendars {
-        if calendar.kalenderName.contains("> Berichte")
-            || calendar.kalenderName.contains("> Gesamtwehrkalender")
-        {
-            println!("{:?}", calendar);
-
+    for calendar in fireplan_calendars {
+        info!("{:?}", calendar);
+        if calendar.kalenderName.eq(name) && calendar.standort.eq(standort) {
             let termine_string = match client
                 .get(format!(
                     "https://data.fireplan.de/api/Termine/{}",
@@ -158,7 +165,7 @@ fn generate_calendars(calendars: Vec<Kalender>, token: &ApiKey) -> Result<()> {
 
             let mut calendar_out = Calendar::new();
 
-            calendar_out.name(calendar.kalenderName().as_str());
+            //calendar_out.name(calendar.kalenderName().as_str());
 
             for termin in termine {
                 info!("{:?}", termin);
@@ -171,7 +178,9 @@ fn generate_calendars(calendars: Vec<Kalender>, token: &ApiKey) -> Result<()> {
                             )
                             .unwrap_or_default(),
                         )
-                        .summary(termin.subject.unwrap_or_default().as_str())
+                        .summary(
+                            format!("{}: {}", praefix, termin.subject.unwrap_or_default()).as_str(),
+                        )
                         .description(termin.description.unwrap_or_default().as_str())
                         .class(Class::Public)
                         .done();
@@ -179,7 +188,9 @@ fn generate_calendars(calendars: Vec<Kalender>, token: &ApiKey) -> Result<()> {
                     calendar_out.push(event);
                 } else {
                     let event = Event::new()
-                        .summary(termin.subject.unwrap_or_default().as_str())
+                        .summary(
+                            format!("{}: {}", praefix, termin.subject.unwrap_or_default()).as_str(),
+                        )
                         .description(termin.description.unwrap_or_default().as_str())
                         .starts(
                             NaiveDate::parse_from_str(
@@ -202,17 +213,88 @@ fn generate_calendars(calendars: Vec<Kalender>, token: &ApiKey) -> Result<()> {
                     calendar_out.push(event);
                 }
             }
-            calendar_out.description(
-                format!(
-                    "{} of Standort {}",
-                    calendar.kalenderName(),
-                    calendar.standort()
-                )
-                .as_str(),
-            );
+            //calendar_out.description(
+            //    format!(
+            //        "{} of Standort {}",
+            //        calendar.kalenderName(),
+            //        calendar.standort()
+            //    )
+            //    .as_str(),
+            //);
             calendar_out.timezone("Europe/Berlin");
             //calendar_out.done();
             println!("{}", calendar_out);
+
+            return Ok(calendar_out);
+        }
+    }
+
+    Err(anyhow!("Nothing found"))
+}
+
+fn generate_calendars(
+    calendars: Vec<FireplanKalender>,
+    token: &ApiKey,
+    config: &Configuration,
+) -> Result<()> {
+    let mut gesamtwehrkalender = get_calendar(
+        &calendars,
+        "Gesamtwehr",
+        "> Gesamtwehrkalender",
+        config.praefix_gesamtwehr().as_str(),
+        token,
+    )?;
+
+    gesamtwehrkalender.description("Abteilungsübergreifende Termine");
+    gesamtwehrkalender.name("Gesamtwehrkalender");
+
+    fs::remove_dir_all(Path::new(config.zielordner()))?;
+    fs::create_dir_all(Path::new(config.zielordner()))?;
+
+    let mut kalenderdatei = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .open(format!("{}/Gesamtwehr.ics", config.zielordner().as_str()))
+        .unwrap();
+
+    kalenderdatei.write_all(gesamtwehrkalender.to_string().as_bytes())?;
+    kalenderdatei.flush()?;
+
+    for konfig_kalender in &config.kalender {
+        match get_calendar(
+            &calendars,
+            konfig_kalender.standort(),
+            konfig_kalender.name(),
+            konfig_kalender.praefix(),
+            &token,
+        ) {
+            Ok(mut c) => {
+                let mut kalenderdatei = OpenOptions::new()
+                    .read(true)
+                    .write(true)
+                    .create(true)
+                    .open(format!(
+                        "{}/{}.ics",
+                        config.zielordner(),
+                        konfig_kalender.ical_name()
+                    ))
+                    .unwrap();
+
+                c.description(konfig_kalender.ical_name());
+                c.description(konfig_kalender.ical_beschreibung());
+
+                kalenderdatei.write_all(c.to_string().as_bytes())?;
+                kalenderdatei.flush()?;
+            }
+            Err(e) => {
+                error!(
+                    "Could not get calendar {}/{}",
+                    konfig_kalender.standort(),
+                    konfig_kalender.name()
+                );
+                continue;
+            }
         }
     }
 
@@ -221,15 +303,13 @@ fn generate_calendars(calendars: Vec<Kalender>, token: &ApiKey) -> Result<()> {
 
 pub fn monitor_calendars(config: &Configuration) -> Result<()> {
     loop {
-        match fetch_calendars(config.fireplan_api_key().to_string()) {
+        match fetch_calendars(&config) {
             Ok((v, token)) => {
-                //info!("{:?}", s);
-
-                let _ = generate_calendars(v, &token);
+                let _ = generate_calendars(v, &token, &config);
             }
             Err(e) => error!("Could not fetch calendars: {}", e),
         };
 
-        std::thread::sleep(Duration::from_secs(60));
+        std::thread::sleep(Duration::from_secs(900));
     }
 }

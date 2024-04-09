@@ -9,11 +9,12 @@ use std::fs;
 mod fireplan;
 
 #[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug, Getters)]
-pub struct Kalender {
+pub struct KonfigKalender {
     name: String,
     standort: String,
     praefix: String,
-    auffuellen_gesamtwehr: bool,
+    ical_name: String,
+    ical_beschreibung: String,
 }
 
 #[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug, Getters)]
@@ -28,7 +29,8 @@ pub struct Configuration {
     fireplan_api_key: String,
     praefix_gesamtwehr: String,
     zielordner: String,
-    kalender: Vec<Kalender>,
+    intervall_sekunden: u16,
+    kalender: Vec<KonfigKalender>,
 }
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct ParsedData {
