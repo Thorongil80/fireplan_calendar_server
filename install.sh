@@ -7,7 +7,7 @@ cargo build -r
 echo "If running, stop systemd service..."
 sudo systemctl stop fireplan_calendar_server || true
 echo "Copying to /usr/local/bin"
-sudo cp target/release/fireplan_alarm_imap /usr/local/bin
+sudo cp target/release/fireplan_calendar_server /usr/local/bin
 echo "Installing systemd service..."
 sudo cp fireplan_calendar_server.service /etc/systemd/system/
 echo "Reloading systemd daemons..."
