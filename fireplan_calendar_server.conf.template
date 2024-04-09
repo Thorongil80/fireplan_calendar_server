@@ -1,24 +1,30 @@
 fireplan_api_key = "xxxxxxxxxxxxxxx"
+präfix_gesamtwehr = "UW"
+zielordner = "/tmp/fireplan_ical"
 
 # welche Kalender exponieren?
 [[kalender]]
 name = "> Berichte"
 standort = "Stettfeld"
-label = "Stettfeld"
-prefix = "S"
+ical_name = "Stettfeld"
+präfix = "S"
+auffüllen_gesamtwehr = true
 
 
 name = "> Berichte"
 standort = "Ubstadt"
-label = "Ubstadt"
-prefix = "U"
+ical_name = "Ubstadt"
+präfix = "U"
+auffüllen_gesamtwehr = true
 
 name = "> Berichte"
 standort = "Weiher"
-label = "Weiher"
-prefix = "W"
+ical_name = "Weiher"
+präfix = "W"
+auffüllen_gesamtwehr = true
 
 name = "> Berichte"
 standort = "Zeutern"
-label = "Zeutern"
-prefix = "Z"
+ical_name = "Zeutern"
+präfix = "Z"
+auffüllen_gesamtwehr = true

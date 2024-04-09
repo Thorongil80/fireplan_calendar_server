@@ -11,7 +11,9 @@ mod fireplan;
 #[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug, Getters)]
 pub struct Kalender {
     name: String,
-    kalender_id: i32,
+    standort: String,
+    präfix: String,
+    auffüllen_gesamtwehr: bool,
 }
 
 #[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug, Getters)]
@@ -24,7 +26,9 @@ pub struct Ric {
 #[derive(Clone, Serialize, Deserialize, Debug, Getters)]
 pub struct Configuration {
     fireplan_api_key: String,
-    //    kalender: Vec<Kalender>,
+    präfix_gesamtwehr: String,
+    zielordner: String,
+    kalender: Vec<Kalender>,
 }
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct ParsedData {
