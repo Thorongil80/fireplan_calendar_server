@@ -12,8 +12,8 @@ mod fireplan;
 pub struct Kalender {
     name: String,
     standort: String,
-    präfix: String,
-    auffüllen_gesamtwehr: bool,
+    praefix: String,
+    auffuellen_gesamtwehr: bool,
 }
 
 #[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug, Getters)]
@@ -26,7 +26,7 @@ pub struct Ric {
 #[derive(Clone, Serialize, Deserialize, Debug, Getters)]
 pub struct Configuration {
     fireplan_api_key: String,
-    präfix_gesamtwehr: String,
+    praefix_gesamtwehr: String,
     zielordner: String,
     kalender: Vec<Kalender>,
 }
