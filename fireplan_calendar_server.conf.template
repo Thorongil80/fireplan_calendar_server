@@ -1,33 +1,25 @@
-fireplan_api_key = "xxxxxxxxxxxxxxx"
-präfix_gesamtwehr = "UW"
-zielordner = "/tmp/fireplan_ical"
-refresh_seconds = 900
+fireplan_api_key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+zielordner = "/tmp/fireplan_ical/"  #der wird gelöscht und wieder angelegt, uffbasse!
+praefix_gesamtwehr = "UW"
+intervall_sekunden = 900  #alle 15 Minuten die API abfragen
 
-# welche Kalender exponieren?
 [[kalender]]
 name = "> Berichte"
 standort = "Stettfeld"
 ical_name = "Stettfeld"
-präfix = "S"
-auffüllen_gesamtwehr = true
+ical_beschreibung = "Termine der Abteilung Stettfeld"
+praefix = "S"
+
+[[kalender]]
+name = "> Berichte"
+standort = "Stettfeld_Jugendfeuerwehr"
+ical_name = "Stettfeld_Jugend"
+ical_beschreibung = "Termine der Jugendfeuerwehr Stettfeld"
+praefix = "JS"
 
 [[kalender]]
 name = "> Berichte"
 standort = "Ubstadt"
 ical_name = "Ubstadt"
-präfix = "U"
-auffüllen_gesamtwehr = true
-
-[[kalender]]
-name = "> Berichte"
-standort = "Weiher"
-ical_name = "Weiher"
-präfix = "W"
-auffüllen_gesamtwehr = true
-
-[[kalender]]
-name = "> Berichte"
-standort = "Zeutern"
-ical_name = "Zeutern"
-präfix = "Z"
-auffüllen_gesamtwehr = true
+ical_beschreibung = "Termine der Abteilung Ubstadt"
+praefix = "U"
