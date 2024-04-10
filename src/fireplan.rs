@@ -1,6 +1,6 @@
 use crate::Configuration;
 use anyhow::{anyhow, Result};
-use chrono::NaiveDate;
+use chrono::{NaiveDate, NaiveDateTime};
 use derive_getters::Getters;
 use icalendar::{Calendar, Class, Component, Event, EventLike};
 use log::{error, info};
@@ -193,7 +193,7 @@ fn get_calendar(
                         )
                         .description(termin.description.unwrap_or_default().as_str())
                         .starts(
-                            NaiveDate::parse_from_str(
+                            NaiveDateTime::parse_from_str(
                                 termin.startDate.unwrap_or_default().as_str(),
                                 "%m/%d/%Y %_I:%M:%S %P",
                             )
