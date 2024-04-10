@@ -1,4 +1,4 @@
-use crate::fireplan::monitor_calendars;
+use crate::fireplan::hauptschleife;
 use derive_getters::Getters;
 use log::{error, info, LevelFilter};
 use serde_derive::Deserialize;
@@ -17,13 +17,6 @@ pub struct KonfigKalender {
     ical_beschreibung: String,
 }
 
-#[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug, Getters)]
-pub struct Ric {
-    text: String,
-    ric: String,
-    subric: String,
-}
-
 #[derive(Clone, Serialize, Deserialize, Debug, Getters)]
 pub struct Configuration {
     fireplan_api_key: String,
@@ -31,19 +24,6 @@ pub struct Configuration {
     zielordner: String,
     intervall_sekunden: u16,
     kalender: Vec<KonfigKalender>,
-}
-#[derive(Clone, Serialize, Deserialize, Debug)]
-pub struct ParsedData {
-    rics: Vec<Ric>,
-    einsatznrlst: String,
-    strasse: String,
-    hausnummer: String,
-    ort: String,
-    ortsteil: String,
-    objektname: String,
-    koordinaten: String,
-    einsatzstichwort: String,
-    zusatzinfo: String,
 }
 
 fn main() {
@@ -69,19 +49,19 @@ fn main() {
     )])
     .unwrap();
 
-    let mut configuration_output = format!("Configuration: {:?}", configuration);
+    let mut configuration_output = format!("Konfiguration: {:?}", configuration);
 
     configuration_output = configuration_output.replace(&configuration.fireplan_api_key, "****");
 
-    info!("Configuration: {}", configuration_output);
+    info!("Konfiguration: {}", configuration_output);
 
     let my_configuration = configuration.clone();
-    let handle = std::thread::spawn(move || match monitor_calendars(&my_configuration) {
+    let handle = std::thread::spawn(move || match hauptschleife(&my_configuration) {
         Ok(_) => {
-            info!("monitor done",)
+            info!("Hauptschleife beendet",)
         }
         Err(e) => {
-            error!("monitor failed: {}", e)
+            error!("Hauptschleife konnte nicht starten: {}", e)
         }
     });
 

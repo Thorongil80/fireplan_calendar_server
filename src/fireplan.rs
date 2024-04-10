@@ -8,9 +8,8 @@ use reqwest::blocking::Client;
 use serde_derive::{Deserialize, Serialize};
 use std::fs;
 use std::fs::OpenOptions;
-use std::io::{read_to_string, Write};
+use std::io::Write;
 use std::path::Path;
-use std::str::FromStr;
 use std::time::Duration;
 
 #[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug, Getters)]
@@ -38,13 +37,13 @@ struct ApiKey {
     utoken: String,
 }
 
-fn fetch_calendars(config: &Configuration) -> Result<(Vec<FireplanKalender>, ApiKey)> {
-    info!("Fetch calendars");
+fn hole_kalenderliste(konfig: &Configuration) -> Result<(Vec<FireplanKalender>, ApiKey)> {
+    info!("Kalenderliste holen");
 
     let client = Client::new();
     let token_string = match client
         .get("https://data.fireplan.de/api/Register/Verwaltung".to_string())
-        .header("API-Key", config.fireplan_api_key.clone())
+        .header("API-Key", konfig.fireplan_api_key.clone())
         .header("accept", "*/*")
         .send()
     {
@@ -54,30 +53,30 @@ fn fetch_calendars(config: &Configuration) -> Result<(Vec<FireplanKalender>, Api
                 match r.text() {
                     Ok(t) => t,
                     Err(e) => {
-                        error!("Could not get API Key: {}", e);
-                        return Err(anyhow!("Could not get API Key: {}", e));
+                        error!("Konnte ApiKey nicht bekommen: {}", e);
+                        return Err(anyhow!("Konnte ApiKey nicht bekommen: {}", e));
                     }
                 }
             } else {
-                error!("Could not get API Key: {:?}", r.status());
-                return Err(anyhow!("Could not get API Key: {}", r.status()));
+                error!("Konnte ApiKey nicht bekommen: {:?}", r.status());
+                return Err(anyhow!("Konnte ApiKey nicht bekommen: {}", r.status()));
             }
         }
         Err(e) => {
-            error!("Could not get API Key: {}", e);
-            return Err(anyhow!("Could not get API Key: {}", e));
+            error!("Konnte ApiKey nicht bekommen: {}", e);
+            return Err(anyhow!("Konnte ApiKey nicht bekommen: {}", e));
         }
     };
 
     let token: ApiKey = match serde_json::from_str(&token_string) {
         Ok(apikey) => apikey,
         Err(e) => {
-            error!("could not deserialize token key: {}", e);
-            return Err(anyhow!("could not deserialize token key: {}", e));
+            error!("Konnte ApiToken nicht deserialisieren: {}", e);
+            return Err(anyhow!("Konnte ApiToken nicht deserialisieren: {}", e));
         }
     };
 
-    info!("acquired API Token: {:?}", token);
+    info!("ApiToken erhalten: {:?}", token);
 
     let kalender_string = match client
         .get("https://data.fireplan.de/api/Kalender".to_string())
@@ -91,42 +90,42 @@ fn fetch_calendars(config: &Configuration) -> Result<(Vec<FireplanKalender>, Api
                 match r.text() {
                     Ok(t) => t,
                     Err(e) => {
-                        error!("Could not get calendar list: {}", e);
-                        return Err(anyhow!("Could not get calendar list: {}", e));
+                        error!("Konnte Kalenderliste nicht laden: {}", e);
+                        return Err(anyhow!("Konnte Kalenderliste nicht laden: {}", e));
                     }
                 }
             } else {
-                error!("Could not get calendar list: {:?}", r.status());
-                return Err(anyhow!("Could not get calendar list: {}", r.status()));
+                error!("Konnte Kalenderliste nicht laden: {:?}", r.status());
+                return Err(anyhow!("Konnte Kalenderliste nicht laden: {}", r.status()));
             }
         }
         Err(e) => {
-            error!("Could not get calendar list: {}", e);
-            return Err(anyhow!("Could not get calendar list: {}", e));
+            error!("Konnte Kalenderliste nicht laden: {}", e);
+            return Err(anyhow!("Konnte Kalenderliste nicht laden: {}", e));
         }
     };
 
     let kalender = match serde_json::from_str::<Vec<FireplanKalender>>(&kalender_string) {
         Ok(k) => k,
-        Err(e) => return Err(anyhow!("Could not parse calendar list: {}", e)),
+        Err(e) => return Err(anyhow!("Konnte Kalenderliste nicht entschlüsseln: {}", e)),
     };
 
     Ok((kalender, token))
 }
 
-fn get_calendar(
-    fireplan_calendars: &Vec<FireplanKalender>,
+fn hole_kalender(
+    kalenderliste: &Vec<FireplanKalender>,
     standort: &str,
     name: &str,
     praefix: &str,
     token: &ApiKey,
 ) -> Result<Calendar> {
-    let client = Client::new();
+    let klient = Client::new();
 
-    for calendar in fireplan_calendars {
+    for calendar in kalenderliste {
         info!("{:?}", calendar);
         if calendar.kalenderName.eq(name) && calendar.standort.eq(standort) {
-            let termine_string = match client
+            let termine_string = match klient
                 .get(format!(
                     "https://data.fireplan.de/api/Termine/{}",
                     calendar.kalenderID
@@ -141,18 +140,18 @@ fn get_calendar(
                         match r.text() {
                             Ok(t) => t,
                             Err(e) => {
-                                error!("Could not get calendar list: {}", e);
-                                return Err(anyhow!("Could not get calendar list: {}", e));
+                                error!("Konnte Kalender nicht laden: {}", e);
+                                return Err(anyhow!("Konnte Kalender nicht laden: {}", e));
                             }
                         }
                     } else {
-                        error!("Could not get calendar list: {:?}", r.status());
-                        return Err(anyhow!("Could not get calendar list: {}", r.status()));
+                        error!("Konnte Kalender nicht laden: {:?}", r.status());
+                        return Err(anyhow!("Konnte Kalender nicht laden: {}", r.status()));
                     }
                 }
                 Err(e) => {
-                    error!("Could not get calendar list: {}", e);
-                    return Err(anyhow!("Could not get calendar list: {}", e));
+                    error!("Konnte Kalender nicht laden: {}", e);
+                    return Err(anyhow!("Konnte Kalender nicht laden: {}", e));
                 }
             };
 
@@ -163,9 +162,7 @@ fn get_calendar(
                     Err(e) => return Err(anyhow!(e)),
                 };
 
-            let mut calendar_out = Calendar::new();
-
-            //calendar_out.name(calendar.kalenderName().as_str());
+            let mut kalender_ausgabe = Calendar::new();
 
             for termin in termine {
                 info!("{:?}", termin);
@@ -185,9 +182,9 @@ fn get_calendar(
                         .class(Class::Public)
                         .done();
                     info!("{:?}", event);
-                    calendar_out.push(event);
+                    kalender_ausgabe.push(event);
                 } else {
-                    let event = Event::new()
+                    let ereignis = Event::new()
                         .summary(
                             format!("{}: {}", praefix, termin.subject.unwrap_or_default()).as_str(),
                         )
@@ -209,61 +206,54 @@ fn get_calendar(
                         )
                         .done();
 
-                    info!("{:?}", event);
-                    calendar_out.push(event);
+                    info!("{:?}", ereignis);
+                    kalender_ausgabe.push(ereignis);
                 }
             }
-            //calendar_out.description(
-            //    format!(
-            //        "{} of Standort {}",
-            //        calendar.kalenderName(),
-            //        calendar.standort()
-            //    )
-            //    .as_str(),
-            //);
-            calendar_out.timezone("Europe/Berlin");
-            //calendar_out.done();
-            println!("{}", calendar_out);
 
-            return Ok(calendar_out);
+            kalender_ausgabe.timezone("Europe/Berlin");
+            //calendar_out.done();
+            println!("{}", kalender_ausgabe);
+
+            return Ok(kalender_ausgabe);
         }
     }
 
-    Err(anyhow!("Nothing found"))
+    Err(anyhow!("Nichts gefunden"))
 }
 
-fn generate_calendars(
-    calendars: Vec<FireplanKalender>,
+fn generiere_kalender(
+    kalender: Vec<FireplanKalender>,
     token: &ApiKey,
-    config: &Configuration,
+    konfig: &Configuration,
 ) -> Result<()> {
-    let mut gesamtwehrkalender = get_calendar(
-        &calendars,
+    let mut gesamtwehrkalender = hole_kalender(
+        &kalender,
         "Gesamtwehr",
         "> Gesamtwehrkalender",
-        config.praefix_gesamtwehr().as_str(),
+        konfig.praefix_gesamtwehr().as_str(),
         token,
     )?;
 
     gesamtwehrkalender.description("Abteilungsübergreifende Termine");
     gesamtwehrkalender.name("Gesamtwehrkalender");
 
-    fs::remove_dir_all(Path::new(config.zielordner()))?;
-    fs::create_dir_all(Path::new(config.zielordner()))?;
+    fs::remove_dir_all(Path::new(konfig.zielordner()))?;
+    fs::create_dir_all(Path::new(konfig.zielordner()))?;
 
     let mut kalenderdatei = OpenOptions::new()
         .read(true)
         .write(true)
         .create(true)
-        .open(format!("{}/Gesamtwehr.ics", config.zielordner().as_str()))
+        .open(format!("{}/Gesamtwehr.ics", konfig.zielordner().as_str()))
         .unwrap();
 
     kalenderdatei.write_all(gesamtwehrkalender.to_string().as_bytes())?;
     kalenderdatei.flush()?;
 
-    for konfig_kalender in &config.kalender {
-        match get_calendar(
-            &calendars,
+    for konfig_kalender in &konfig.kalender {
+        match hole_kalender(
+            &kalender,
             konfig_kalender.standort(),
             konfig_kalender.name(),
             konfig_kalender.praefix(),
@@ -276,7 +266,7 @@ fn generate_calendars(
                     .create(true)
                     .open(format!(
                         "{}/{}.ics",
-                        config.zielordner(),
+                        konfig.zielordner(),
                         konfig_kalender.ical_name()
                     ))
                     .unwrap();
@@ -289,7 +279,7 @@ fn generate_calendars(
             }
             Err(e) => {
                 error!(
-                    "Could not get calendar {}/{}",
+                    "Konnte Kalender {}/{} nicht laden",
                     konfig_kalender.standort(),
                     konfig_kalender.name()
                 );
@@ -301,13 +291,13 @@ fn generate_calendars(
     Ok(())
 }
 
-pub fn monitor_calendars(config: &Configuration) -> Result<()> {
+pub fn hauptschleife(konfig: &Configuration) -> Result<()> {
     loop {
-        match fetch_calendars(&config) {
+        match hole_kalenderliste(konfig) {
             Ok((v, token)) => {
-                let _ = generate_calendars(v, &token, &config);
+                let _ = generiere_kalender(v, &token, konfig);
             }
-            Err(e) => error!("Could not fetch calendars: {}", e),
+            Err(e) => error!("Konnte Kalenderliste nicht laden: {}", e),
         };
 
         std::thread::sleep(Duration::from_secs(900));
