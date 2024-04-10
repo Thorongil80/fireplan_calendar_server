@@ -13,13 +13,13 @@ sudo cp fireplan_calendar_server.service /etc/systemd/system/
 echo "Reloading systemd daemons..."
 sudo systemctl daemon-reload
 echo "Enabling systemd service on boot..."
-sudo systemctl enable fireplan_alarm_imap --now
+sudo systemctl enable fireplan_calendar_server --now
 echo "Installation done"
 echo 
 echo "you can monitor the service via"
 echo
-echo "sudo journalctl -u fireplan_alarm_imap"
+echo "sudo journalctl -u fireplan_calendar_server"
 echo
 echo "you can start/stop/restart the service via"
 echo
-echo "systemctl start|stop|restart fireplan_alarm_imap"
+echo "systemctl start|stop|restart fireplan_calendar_server"
