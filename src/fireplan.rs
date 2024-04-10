@@ -8,11 +8,11 @@ use icalendar::{Calendar, Class, Component, Event, EventLike};
 use log::{error, info};
 use reqwest::blocking::Client;
 use serde_derive::{Deserialize, Serialize};
-use std::fs;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::Path;
 use std::time::Duration;
+use std::{fs, io};
 
 #[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug, Getters)]
 struct FireplanTermine {
@@ -37,6 +37,21 @@ struct FireplanKalender {
 #[derive(Clone, Serialize, Deserialize, Eq, Hash, PartialEq, Debug)]
 struct ApiKey {
     utoken: String,
+}
+
+fn remove_dir_contents<P: AsRef<Path>>(path: P) -> io::Result<()> {
+    for entry in fs::read_dir(path)? {
+        let entry = entry?;
+        let path = entry.path();
+
+        if entry.file_type()?.is_dir() {
+            remove_dir_contents(&path)?;
+            fs::remove_dir(path)?;
+        } else {
+            fs::remove_file(path)?;
+        }
+    }
+    Ok(())
 }
 
 fn hole_kalenderliste(konfig: &Configuration) -> Result<(Vec<FireplanKalender>, ApiKey)> {
@@ -243,8 +258,7 @@ fn generiere_kalender(
     gesamtwehrkalender.description("Gesamtwehrkalender");
     gesamtwehrkalender.name("Gesamtwehr");
 
-    fs::remove_dir_all(Path::new(konfig.zielordner()))?;
-    fs::create_dir_all(Path::new(konfig.zielordner()))?;
+    remove_dir_contents(Path::new(konfig.zielordner()))?;
 
     let mut kalenderdatei = OpenOptions::new()
         .read(true)
