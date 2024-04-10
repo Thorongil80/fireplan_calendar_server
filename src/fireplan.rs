@@ -193,7 +193,7 @@ fn hole_kalender(
                         .description(termin.description.unwrap_or_default().as_str())
                         .starts(
                             NaiveDateTime::parse_from_str(
-                                termin.startDate.unwrap_or_default().as_str(),
+                                termin.startDate.clone().unwrap_or_default().as_str(),
                                 "%m/%d/%Y %_I:%M:%S %P",
                             )
                             .unwrap_or_default(),
@@ -201,7 +201,10 @@ fn hole_kalender(
                         .class(Class::Public)
                         .ends(
                             NaiveDateTime::parse_from_str(
-                                termin.endDate.unwrap_or_default().as_str(),
+                                termin
+                                    .endDate
+                                    .unwrap_or(termin.startDate.unwrap_or_default())
+                                    .as_str(),
                                 "%m/%d/%Y %_I:%M:%S %P",
                             )
                             .unwrap_or_default(),
