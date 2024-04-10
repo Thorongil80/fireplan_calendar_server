@@ -257,7 +257,7 @@ fn generiere_kalender(
             konfig_kalender.standort(),
             konfig_kalender.name(),
             konfig_kalender.praefix(),
-            &token,
+            token,
         ) {
             Ok(mut c) => {
                 let mut kalenderdatei = OpenOptions::new()
@@ -279,9 +279,10 @@ fn generiere_kalender(
             }
             Err(e) => {
                 error!(
-                    "Konnte Kalender {}/{} nicht laden",
+                    "Konnte Kalender {}/{} nicht laden: {}",
                     konfig_kalender.standort(),
-                    konfig_kalender.name()
+                    konfig_kalender.name(),
+                    e
                 );
                 continue;
             }
