@@ -7,19 +7,19 @@ intervall_sekunden = 900  #alle 15 Minuten die API abfragen
 name = "> Berichte"
 standort = "Stettfeld"
 ical_name = "Stettfeld"
-ical_beschreibung = "Termine der Abteilung Stettfeld"
+ical_beschreibung = "Abteilung Stettfeld"
 praefix = "S"
 
 [[kalender]]
 name = "> Berichte"
 standort = "Stettfeld_Jugendfeuerwehr"
 ical_name = "Stettfeld_Jugend"
-ical_beschreibung = "Termine der Jugendfeuerwehr Stettfeld"
+ical_beschreibung = "Jugendfeuerwehr Stettfeld"
 praefix = "JS"
 
 [[kalender]]
 name = "> Berichte"
 standort = "Ubstadt"
 ical_name = "Ubstadt"
-ical_beschreibung = "Termine der Abteilung Ubstadt"
+ical_beschreibung = "Abteilung Ubstadt"
 praefix = "U"
