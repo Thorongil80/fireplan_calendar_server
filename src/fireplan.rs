@@ -237,8 +237,8 @@ fn generiere_kalender(
         token,
     )?;
 
-    gesamtwehrkalender.description("Abteilungsübergreifende Termine");
-    gesamtwehrkalender.name("Gesamtwehrkalender");
+    gesamtwehrkalender.description("Gesamtwehrkalender");
+    gesamtwehrkalender.name("Gesamtwehr");
 
     fs::remove_dir_all(Path::new(konfig.zielordner()))?;
     fs::create_dir_all(Path::new(konfig.zielordner()))?;
