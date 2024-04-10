@@ -1,5 +1,5 @@
 fireplan_api_key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-zielordner = "/tmp/fireplan_ical/"  #der wird gelöscht und wieder angelegt, uffbasse!
+zielordner = "/tmp/fireplan_ical/"  #der inhalt wird gelöscht, uffbasse!
 praefix_gesamtwehr = "UW"
 intervall_sekunden = 900  #alle 15 Minuten die API abfragen
 
