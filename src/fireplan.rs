@@ -200,7 +200,7 @@ fn hole_kalender(
                         )
                         .class(Class::Public)
                         .ends(
-                            NaiveDate::parse_from_str(
+                            NaiveDateTime::parse_from_str(
                                 termin.endDate.unwrap_or_default().as_str(),
                                 "%m/%d/%Y %_I:%M:%S %P",
                             )
