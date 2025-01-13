@@ -35,7 +35,7 @@ fn main() {
     } else {
         format!(
             "{}/fireplan_calendar_server.conf",
-            homedir::get_my_home().unwrap().unwrap().to_string_lossy()
+            homedir::my_home().unwrap().unwrap().to_string_lossy()
         )
     };
     let content = fs::read_to_string(file).expect("Config file missing!");
